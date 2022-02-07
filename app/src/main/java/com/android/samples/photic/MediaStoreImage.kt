@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.samples.mediastore
+package com.android.samples.photic
 
 import android.net.Uri
 import androidx.recyclerview.widget.DiffUtil

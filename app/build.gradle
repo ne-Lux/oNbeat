@@ -29,7 +29,7 @@ android {
         }
     }
     defaultConfig {
-        applicationId "com.android.samples.mediastore"
+        applicationId "com.android.samples.photic"
         minSdkVersion 30
         targetSdkVersion 31
         versionCode 1

@@ -1,12 +1,7 @@
-package com.android.samples.mediastore
+package com.android.samples.photic
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.Context
-import android.media.MediaScannerConnection
-import android.media.MediaScannerConnection.MediaScannerConnectionClient
-import android.net.Uri
-import android.widget.Toast
 import androidx.exifinterface.media.ExifInterface
 import java.io.File
 import java.io.IOException

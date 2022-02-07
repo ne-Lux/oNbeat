@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.samples.mediastore.viewmodels
+package com.android.samples.photic.viewmodels
 
 import android.app.Application
 import android.content.ContentResolver
@@ -27,7 +27,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.android.samples.mediastore.MediaStoreImage
+import com.android.samples.photic.MediaStoreImage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

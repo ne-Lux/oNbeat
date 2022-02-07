@@ -1,4 +1,4 @@
-package com.android.samples.mediastore
+package com.android.samples.photic
 
 import android.view.View
 import android.widget.ImageView

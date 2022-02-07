@@ -1,4 +1,4 @@
-package com.android.samples.mediastore
+package com.android.samples.photic
 
 import android.Manifest
 import android.content.Intent
@@ -8,7 +8,6 @@ import android.graphics.PorterDuff
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
 import android.provider.Settings
 import android.util.Log
 import android.view.LayoutInflater
@@ -16,8 +15,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AlphaAnimation
 import android.widget.ImageView
-import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -25,8 +22,8 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.setFragmentResultListener
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ListAdapter
-import com.android.samples.mediastore.databinding.GalleryFragmentBinding
-import com.android.samples.mediastore.viewmodels.GalleryFragmentViewModel
+import com.android.samples.photic.databinding.GalleryFragmentBinding
+import com.android.samples.photic.viewmodels.GalleryFragmentViewModel
 import com.bumptech.glide.Glide
 import java.text.SimpleDateFormat
 import java.util.*
@@ -38,7 +35,7 @@ class GalleryFragment: Fragment(){
     private val viewModel: GalleryFragmentViewModel by activityViewModels()
     private lateinit var binding: GalleryFragmentBinding
     private val buttonClick = AlphaAnimation(0f, 1f)
-    val datedialogFragment = DateDialogFragment()
+    private val datedialogFragment = DateDialogFragment()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = GalleryFragmentBinding.inflate(inflater, container, false)

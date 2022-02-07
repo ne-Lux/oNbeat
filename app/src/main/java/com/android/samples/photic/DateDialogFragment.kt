@@ -1,4 +1,4 @@
-package com.android.samples.mediastore
+package com.android.samples.photic
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -7,9 +7,9 @@ import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
 
-import com.android.samples.mediastore.databinding.DatedialogFragmentBinding
+import com.android.samples.photic.databinding.DatedialogFragmentBinding
 
-import com.android.samples.mediastore.viewmodels.GalleryFragmentViewModel
+import com.android.samples.photic.viewmodels.GalleryFragmentViewModel
 
 class DateDialogFragment: DialogFragment(R.layout.datedialog_fragment) {
 

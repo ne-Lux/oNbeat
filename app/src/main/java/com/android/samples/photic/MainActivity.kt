@@ -1,5 +1,5 @@
 
-package com.android.samples.mediastore
+package com.android.samples.photic
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
