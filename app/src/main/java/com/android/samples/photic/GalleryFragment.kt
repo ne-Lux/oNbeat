@@ -1,6 +1,7 @@
 package com.android.samples.photic
 
 import android.Manifest
+import android.app.Application
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
@@ -8,13 +9,17 @@ import android.graphics.PorterDuff
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.provider.Settings
+import android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AlphaAnimation
 import android.widget.ImageView
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -28,6 +33,7 @@ import com.bumptech.glide.Glide
 import java.text.SimpleDateFormat
 import java.util.*
 
+
 private const val WRITE_EXTERNAL_STORAGE_REQUEST = 0x0815
 
 class GalleryFragment: Fragment(){
@@ -36,6 +42,10 @@ class GalleryFragment: Fragment(){
     private lateinit var binding: GalleryFragmentBinding
     private val buttonClick = AlphaAnimation(0f, 1f)
     private val datedialogFragment = DateDialogFragment()
+    var PERMISSIONS = arrayOf(
+        Manifest.permission.READ_EXTERNAL_STORAGE,
+        Manifest.permission.WRITE_EXTERNAL_STORAGE
+    )
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = GalleryFragmentBinding.inflate(inflater, container, false)
@@ -93,10 +103,14 @@ class GalleryFragment: Fragment(){
             galleryAdapter.submitList(images)
         }
 
+
         if (!haveStoragePermission()) {
-            requestPermission()
+            permReqLauncher.launch(PERMISSIONS)
+        } else if (!Environment.isExternalStorageManager()) {
+            externalStorageManager()
             showImages()
-        } else {
+        }
+        else {
             showImages()
         }
     }
@@ -230,15 +244,20 @@ class GalleryFragment: Fragment(){
         val startMillis: Long = viewModel.startDateTime.time
         val stopMillis: Long = viewModel.stopDateTime.time
 
-        if(viewModel.numberImages > 1) timeSpan = (stopMillis - startMillis)/(viewModel.numberImages+1) else timeSpan = 0
+        if (Environment.isExternalStorageManager()){
+            if(viewModel.numberImages > 1) timeSpan = (stopMillis - startMillis)/(viewModel.numberImages+1) else timeSpan = 0
 
-        while (imageIterator.hasNext()) {
-            dateToSet = Date(startMillis+timeSpan*(imageIterator.nextIndex()+1))
-            imageToChange = imageIterator.next()
-            fullPathNF = writeExif.apply(imageToChange.rPath, imageToChange.fNumber, dateToSet)
-            MediaScannerConnection.scanFile(requireContext(), arrayOf(fullPathNF), arrayOf("image/jpeg"),null)
+            while (imageIterator.hasNext()) {
+                dateToSet = Date(startMillis+timeSpan*(imageIterator.nextIndex()+1))
+                imageToChange = imageIterator.next()
+                fullPathNF = writeExif.apply(imageToChange.rPath, imageToChange.fNumber, dateToSet)
+                MediaScannerConnection.scanFile(requireContext(), arrayOf(fullPathNF), arrayOf("image/jpeg"),null)
+            }
+            onClearClick()
         }
-        onClearClick()
+        else {
+            externalStorageManager()
+        }
     }
 
     private fun initCalendarImage(){
@@ -312,25 +331,28 @@ class GalleryFragment: Fragment(){
                 && (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED))
     }
 
-    // TODO: onrequestpermissionresult durch onactivityresult ersetzen und dann nochmal showimages() ausführen
-
-    private fun requestPermission() {
-        if (!haveStoragePermission()) {
-            val permissions = arrayOf(
-                Manifest.permission.READ_EXTERNAL_STORAGE,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.MANAGE_EXTERNAL_STORAGE
-            )
-            ActivityCompat.requestPermissions(requireActivity(), permissions, WRITE_EXTERNAL_STORAGE_REQUEST)
-
-            val uri = Uri.parse("package:${BuildConfig.APPLICATION_ID}")
-
-            startActivity(
-                Intent(
-                    Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
-                    uri
-                )
-            )
+    private val permReqLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+            val permissionReqRes = permissions.entries.all {
+                it.value == true
+            }
+            if (permissionReqRes) {
+                if(!Environment.isExternalStorageManager()) {
+                    externalStorageManager()
+                    showImages()
+                }
+                else showImages()
+            }
+            else Toast.makeText(requireContext(),R.string.permission_not_granted, Toast.LENGTH_LONG).show()
         }
+
+    private fun externalStorageManager(){
+        val uri = Uri.parse("package:${BuildConfig.APPLICATION_ID}")
+        startActivity(
+            Intent(
+                Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
+                uri
+            )
+        )
     }
 }
