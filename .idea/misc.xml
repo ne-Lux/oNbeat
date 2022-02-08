@@ -15,12 +15,15 @@
         <entry key="..\:/Users/lukas/AndroidStudioProjects/PhotiC/app/src/main/res/drawable/ic_start_calendar_clicked.xml" value="0.2335" />
         <entry key="..\:/Users/lukas/AndroidStudioProjects/PhotiC/app/src/main/res/drawable/ic_start_clock.xml" value="0.2335" />
         <entry key="..\:/Users/lukas/AndroidStudioProjects/PhotiC/app/src/main/res/drawable/ic_stop_calendar_clicked.xml" value="0.2335" />
+        <entry key="..\:/Users/lukas/AndroidStudioProjects/PhotiC/app/src/main/res/drawable/rounded_bg.xml" value="0.2335" />
+        <entry key="..\:/Users/lukas/AndroidStudioProjects/PhotiC/app/src/main/res/layout-v31/recyclerview_detail.xml" value="0.11018518518518519" />
         <entry key="..\:/Users/lukas/AndroidStudioProjects/PhotiC/app/src/main/res/layout/activity_main.xml" value="0.18541666666666667" />
         <entry key="..\:/Users/lukas/AndroidStudioProjects/PhotiC/app/src/main/res/layout/date_dialog.xml" value="0.34057971014492755" />
         <entry key="..\:/Users/lukas/AndroidStudioProjects/PhotiC/app/src/main/res/layout/datedialog_fragment.xml" value="0.1381340579710145" />
         <entry key="..\:/Users/lukas/AndroidStudioProjects/PhotiC/app/src/main/res/layout/gallery_fragment.xml" value="0.1381340579710145" />
         <entry key="..\:/Users/lukas/AndroidStudioProjects/PhotiC/app/src/main/res/layout/gallery_layout.xml" value="0.34057971014492755" />
         <entry key="..\:/Users/lukas/AndroidStudioProjects/PhotiC/app/src/main/res/layout/recyclerview_detail.xml" value="0.1381340579710145" />
+        <entry key="..\:/Users/lukas/AndroidStudioProjects/PhotiC/app/src/main/res/layout/rounded_bg.xml" value="0.34057971014492755" />
         <entry key="..\:/Users/lukas/AndroidStudioProjects/PhotiC/app/src/main/res/layout/start_layout.xml" value="0.34057971014492755" />
         <entry key="..\:/Users/lukas/AndroidStudioProjects/PhotiC/app/src/main/res/layout/tooltip_bottom.xml" value="0.34057971014492755" />
       </map>
