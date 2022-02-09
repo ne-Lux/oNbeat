@@ -58,6 +58,8 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
     val stopDateTime: Date get() = _stopDateTime
     private var _byImage = false
     val byImage: Boolean get() = _byImage
+    private var _dateSelect = false
+    val dateSelect: Boolean get() = _dateSelect
 
     //----------------------------------------------------------------------------------------------------
     //Interface funs for fragments to set variables
@@ -96,6 +98,10 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
 
     fun setbyImage(tag: Boolean){
         _byImage = tag
+    }
+
+    fun setdateSelect(tag:Boolean){
+        _dateSelect = tag
     }
 
     //----------------------------------------------------------------------------------------------------

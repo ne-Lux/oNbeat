@@ -70,6 +70,7 @@ class GalleryFragment: Fragment(){
         }
         binding.startDate.text = viewModel.startDate
         binding.stopDate.text = viewModel.stopDate
+        initCalendarImage()
 
         setFragmentResultListener("requestKey") { requestKey, bundle ->
             val justdate = bundle.getString("justDate")
@@ -77,6 +78,7 @@ class GalleryFragment: Fragment(){
             val dateTimeFormat = SimpleDateFormat("yyyy:MM:dd HH:mm:ss")
             val datetime = dateTimeFormat.parse(finaldate)
 
+            viewModel.setdateSelect(tag = false)
             initCalendarImage()
             if (finaldate != null && justdate != null) swapDates(datetime)
             if (viewModel.startTag) binding.startDate.text = justdate else binding.stopDate.text= justdate
@@ -123,6 +125,7 @@ class GalleryFragment: Fragment(){
             val justdate = SimpleDateFormat("dd.MM.yy").format(image.dateModified)
             val datetime = image.dateModified
 
+            viewModel.setdateSelect(tag = false)
             initCalendarImage()
             swapDates(datetime)
             if(viewModel.startTag) binding.startDate.text=justdate else binding.stopDate.text=justdate
@@ -156,12 +159,14 @@ class GalleryFragment: Fragment(){
 
     private fun onStartClick() {
         viewModel.setTag(tag = true)
+        viewModel.setdateSelect(tag = true)
         datedialogFragment.show(parentFragmentManager,"DateDialog_tag")
         binding.StartCalendar.setImageResource(R.drawable.ic_start_calendar_clicked)
     }
 
     private fun onStopClick() {
         viewModel.setTag(tag = false)
+        viewModel.setdateSelect(tag = true)
         datedialogFragment.show(parentFragmentManager,"DateDialog_tag")
         binding.StopCalendar.setImageResource(R.drawable.ic_stop_calendar_clicked)
     }
@@ -262,9 +267,11 @@ class GalleryFragment: Fragment(){
 
     private fun initCalendarImage(){
         if (viewModel.startTag)
-            binding.StartCalendar.setImageResource(R.drawable.ic_start_calendar)
+            if (viewModel.dateSelect) binding.StartCalendar.setImageResource(R.drawable.ic_start_calendar_clicked)
+            else binding.StartCalendar.setImageResource(R.drawable.ic_start_calendar)
         else
-            binding.StopCalendar.setImageResource(R.drawable.ic_stop_calendar)
+            if (viewModel.dateSelect) binding.StopCalendar.setImageResource(R.drawable.ic_stop_calendar_clicked)
+            else binding.StopCalendar.setImageResource(R.drawable.ic_stop_calendar)
 
 
     }
