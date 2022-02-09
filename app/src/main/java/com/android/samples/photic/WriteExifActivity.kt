@@ -35,6 +35,7 @@ class WriteExifActivity : Activity() {
             else
                 fullPathNF = storage + "DCIM/Changed/" + filename + "_1" + format
         }
+        else fullPathNF = storage + "DCIM/Changed/" + filename + "_1" + format
 
         //---------------------------------------------------------------------------------------------------------------------
         //Copy existing File

@@ -250,7 +250,7 @@ class GalleryFragment: Fragment(){
         val stopMillis: Long = viewModel.stopDateTime.time
 
         if (Environment.isExternalStorageManager()){
-            if(viewModel.numberImages > 1) timeSpan = (stopMillis - startMillis)/(viewModel.numberImages+1) else timeSpan = 0
+            timeSpan = (stopMillis - startMillis)/(viewModel.numberImages+1)
 
             while (imageIterator.hasNext()) {
                 dateToSet = Date(startMillis+timeSpan*(imageIterator.nextIndex()+1))

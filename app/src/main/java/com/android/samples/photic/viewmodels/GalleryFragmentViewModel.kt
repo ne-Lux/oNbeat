@@ -22,6 +22,7 @@ import android.content.ContentUris
 import android.database.ContentObserver
 import android.net.Uri
 import android.os.Handler
+import android.os.Looper
 import android.provider.MediaStore
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -135,9 +136,7 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
             )
             val selection = "${MediaStore.Images.Media._ID} <> ?"
             val selectionArgs = arrayOf("")
-            //val sortOrder = "ifnull(${MediaStore.Images.Media.DATE_TAKEN},${MediaStore.Images.Media.DATE_ADDED})  DESC"
             val sortOrder = "${MediaStore.Images.Media.DATE_MODIFIED}  DESC"
-            //val sortOrder = "CASE ${MediaStore.Images.Media.DATE_TAKEN} WHEN 0 THEN ${MediaStore.Images.Media.DATE_ADDED}*1000 ELSE ${MediaStore.Images.Media.DATE_TAKEN} END DESC"
 
             getApplication<Application>().contentResolver.query(
                 MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
@@ -190,7 +189,7 @@ private fun ContentResolver.registerObserver(
     uri: Uri,
     observer: (selfChange: Boolean) -> Unit
 ): ContentObserver {
-    val contentObserver = object : ContentObserver(Handler()) {
+    val contentObserver = object : ContentObserver(Handler(Looper.myLooper()!!)) {
         override fun onChange(selfChange: Boolean) {
             observer(selfChange)
         }
