@@ -1,7 +1,6 @@
 package com.android.samples.photic
 
 import android.Manifest
-import android.app.Application
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
@@ -11,7 +10,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.provider.Settings
-import android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -20,7 +18,6 @@ import android.view.animation.AlphaAnimation
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -33,16 +30,13 @@ import com.bumptech.glide.Glide
 import java.text.SimpleDateFormat
 import java.util.*
 
-
-private const val WRITE_EXTERNAL_STORAGE_REQUEST = 0x0815
-
 class GalleryFragment: Fragment(){
 
     private val viewModel: GalleryFragmentViewModel by activityViewModels()
     private lateinit var binding: GalleryFragmentBinding
     private val buttonClick = AlphaAnimation(0f, 1f)
     private val datedialogFragment = DateDialogFragment()
-    var PERMISSIONS = arrayOf(
+    private var reqPermissions = arrayOf(
         Manifest.permission.READ_EXTERNAL_STORAGE,
         Manifest.permission.WRITE_EXTERNAL_STORAGE
     )
@@ -72,7 +66,7 @@ class GalleryFragment: Fragment(){
         binding.stopDate.text = viewModel.stopDate
         initCalendarImage()
 
-        setFragmentResultListener("requestKey") { requestKey, bundle ->
+        setFragmentResultListener("requestKey") { _, bundle ->
             val justdate = bundle.getString("justDate")
             val finaldate = bundle.getString("finalDate")
             val dateTimeFormat = SimpleDateFormat("yyyy:MM:dd HH:mm:ss")
@@ -107,7 +101,7 @@ class GalleryFragment: Fragment(){
 
 
         if (!haveStoragePermission()) {
-            permReqLauncher.launch(PERMISSIONS)
+            permReqLauncher.launch(reqPermissions)
         } else if (!Environment.isExternalStorageManager()) {
             externalStorageManager()
             showImages()
@@ -341,7 +335,7 @@ class GalleryFragment: Fragment(){
     private val permReqLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
             val permissionReqRes = permissions.entries.all {
-                it.value == true
+                it.value
             }
             if (permissionReqRes) {
                 if(!Environment.isExternalStorageManager()) {
