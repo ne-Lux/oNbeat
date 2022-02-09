@@ -14,15 +14,17 @@ import kotlin.io.path.Path
 
 
 class WriteExifActivity : Activity() {
-    val storage = "/storage/emulated/0/"
-    val format = ".jpg"
-    var fullPath: String = ""
-    var fullPathNF: String = ""
-    // TODO: 03.02.2022 Umgang jpg/jpeg
+    private val storage = "/storage/emulated/0/"
+    private var format = ""
+    private var fullPath: String = ""
+    private var fullPathNF: String = ""
 
     @SuppressLint("SimpleDateFormat")
     @Throws(IOException::class, ParseException::class)
     fun apply(path: String, filename: String, dateToSet: Date): String {
+
+        if(Files.exists(Path("$storage$path$filename.jpg"))) format = ".jpg"
+        else if (Files.exists(Path("$storage$path$filename.jpeg"))) format = ".jpeg"
 
         val dateTimeFormat = SimpleDateFormat("yyyy:MM:dd HH:mm:ss")
         val date = dateTimeFormat.format(dateToSet)
@@ -49,7 +51,7 @@ class WriteExifActivity : Activity() {
         exifInterface.saveAttributes()
 
         val fileToChange = File(fullPathNF)
-        fileToChange.setLastModified(dateTimeFormat.parse(date).time)
+        fileToChange.setLastModified(dateToSet.time)
 
         Files.delete(Path(fullPath))
         return fullPathNF
