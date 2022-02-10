@@ -4,8 +4,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.os.bundleOf
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.setFragmentResult
 
 import com.android.samples.photic.databinding.DatedialogFragmentBinding
 
@@ -28,6 +30,15 @@ class DateDialogFragment: DialogFragment(R.layout.datedialog_fragment) {
         binding.sByImage.setOnClickListener { onImageClick() }
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        if(!viewModel.byCalendar.value && !viewModel.byImage.value){
+            viewModel.setdateSelect(false)
+            setFragmentResult("destroyedDD", bundleOf("tag" to false))
+        }
+
+    }
+
     private fun onImageClick(){
         viewModel.setbyImage(true)
         dismiss()
@@ -35,6 +46,7 @@ class DateDialogFragment: DialogFragment(R.layout.datedialog_fragment) {
     }
 
     private fun onCalendarClick(){
+        viewModel.setbyCalendar(tag = true)
         dateTimePicker.show(parentFragmentManager,"DateTimePicker_tag")
         dismiss()
     }

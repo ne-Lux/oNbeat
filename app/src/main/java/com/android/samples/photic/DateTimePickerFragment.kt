@@ -8,10 +8,13 @@ import android.os.Bundle
 import android.widget.DatePicker
 import androidx.core.os.bundleOf
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.setFragmentResult
+import com.android.samples.photic.viewmodels.GalleryFragmentViewModel
 import java.text.SimpleDateFormat
 
 class DateTimePickerFragment : DialogFragment(), OnDateSetListener{
+    private val viewModel: GalleryFragmentViewModel by activityViewModels()
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dpd = DatePickerDialog(requireContext())
@@ -39,5 +42,13 @@ class DateTimePickerFragment : DialogFragment(), OnDateSetListener{
             justDateStr = dateFormat.format(date)
         }
         setFragmentResult("requestKey", bundleOf("finalDate" to finalDateStr, "justDate" to justDateStr))
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        viewModel.setdateSelect(false)
+        viewModel.setbyCalendar(tag = false)
+        setFragmentResult("destroyedDPD", bundleOf("tag" to false))
+
     }
 }

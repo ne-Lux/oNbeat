@@ -81,6 +81,12 @@ class GalleryFragment: Fragment(){
             if (finaldate != null && justdate != null) viewModel.setDate(viewModel.startTag.value, datetime, justdate)
             checkConstraints()
         }
+        setFragmentResultListener("destroyedDPD") {_, bundle ->
+            initCalendarImage()
+        }
+        setFragmentResultListener("destroyedDD") {_, bundle ->
+            initCalendarImage()
+        }
 
         binding.clearSelection.setOnClickListener { onClearClick() }
         binding.startLayout.setOnClickListener { onStartClick() }
