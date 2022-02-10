@@ -30,6 +30,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.android.samples.photic.data.MediaStoreImage
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Date
@@ -39,70 +41,74 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
     private val _images = MutableLiveData<List<MediaStoreImage>>()
     val images: LiveData<List<MediaStoreImage>> get() = _images
 
+/*
+    private val _images = MutableStateFlow<List<MediaStoreImage>>(ArrayList())
+    val images: StateFlow<List<MediaStoreImage>> get() = _images
+*/
     private var contentObserver: ContentObserver? = null
 
-    private var _selectedImages = ArrayList<MediaStoreImage>()
-    val selectedImages: ArrayList<MediaStoreImage> get() = _selectedImages
-    private var _viewHolds: MutableList<Int> = ArrayList()
-    val viewHolds: List<Int> get() = _viewHolds
-    private var _numberImages = 0
-    val numberImages: Int get() = _numberImages
-    private var _startTag = false
-    val startTag: Boolean get() = _startTag
-    private var _startDate = ""
-    val startDate: String get() = _startDate
-    private var _stopDate = ""
-    val stopDate: String get() = _stopDate
-    private lateinit var _startDateTime: Date
-    val startDateTime: Date get() = _startDateTime
-    private lateinit var _stopDateTime: Date
-    val stopDateTime: Date get() = _stopDateTime
-    private var _byImage = false
-    val byImage: Boolean get() = _byImage
-    private var _dateSelect = false
-    val dateSelect: Boolean get() = _dateSelect
+    private var _selectedImages = MutableStateFlow<MutableList<MediaStoreImage>>(ArrayList())
+    val selectedImages: StateFlow<List<MediaStoreImage>> get() = _selectedImages
+    private var _viewHolds = MutableStateFlow<MutableList<Int>>(ArrayList())
+    val viewHolds: StateFlow<List<Int>> get() = _viewHolds
+    private var _numberImages = MutableStateFlow(0)
+    val numberImages: StateFlow<Int> get() = _numberImages
+    private var _startTag = MutableStateFlow(false)
+    val startTag: StateFlow<Boolean> get() = _startTag
+    private var _startDate = MutableStateFlow("")
+    val startDate: StateFlow<String> get() = _startDate
+    private var _stopDate = MutableStateFlow("")
+    val stopDate: StateFlow<String> get() = _stopDate
+    private var _startDateTime = MutableStateFlow(Date(0))
+    val startDateTime: StateFlow<Date> get() = _startDateTime
+    private var _stopDateTime = MutableStateFlow(Date(0))
+    val stopDateTime: StateFlow<Date> get() = _stopDateTime
+    private var _byImage = MutableStateFlow(false)
+    val byImage: StateFlow<Boolean> get() = _byImage
+    private var _dateSelect = MutableStateFlow(false)
+    val dateSelect: StateFlow<Boolean> get() = _dateSelect
 
     //----------------------------------------------------------------------------------------------------
     //Interface funs for fragments to set variables
 
     fun selectImage(image: MediaStoreImage, view: Int) {
-        if(_selectedImages.contains(image)){
-            _selectedImages.remove(image)
-            _viewHolds.remove(Integer.valueOf(view))
+        if(_selectedImages.value.contains(image)){
+            _selectedImages.value.remove(image)
+            _viewHolds.value.remove(Integer.valueOf(view))
         }
         else{
-            _selectedImages.add(image)
-            _viewHolds.add(view)
+            _selectedImages.value.add(image)
+            _viewHolds.value.add(view)
         }
-        _numberImages = _selectedImages.size
+        _numberImages.value = _selectedImages.value.size
     }
 
     fun deSelectImages(){
-        _selectedImages.clear()
-        _viewHolds.clear()
+        _selectedImages.value.clear()
+        _viewHolds.value.clear()
     }
 
     fun setTag(tag: Boolean){
-        _startTag = tag
+        _startTag.value = tag
     }
 
     fun setDate(tag: Boolean, datetime: Date, justdate: String){
         if(tag){
-            _startDate = justdate
-            _startDateTime = datetime
+            _startDate.value = justdate
+            _startDateTime.value = datetime
         }
         else {
-            _stopDate = justdate
-            _stopDateTime= datetime
+            _stopDate.value = justdate
+            _stopDateTime.value= datetime
         }
     }
 
     fun setbyImage(tag: Boolean){
-        _byImage = tag
+        _byImage.value = tag
     }
 
     fun setdateSelect(tag:Boolean){
-        _dateSelect = tag
+        _dateSelect.value = tag
     }
 
     //----------------------------------------------------------------------------------------------------
@@ -110,7 +116,7 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
     fun loadImages() {
         viewModelScope.launch {
             val imageList = queryImages()
-            _images.postValue(imageList)
+            _images.value = (imageList)
 
             if (contentObserver == null) {
                 contentObserver = getApplication<Application>().contentResolver.registerObserver(

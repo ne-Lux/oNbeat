@@ -58,13 +58,13 @@ class GalleryFragment: Fragment(){
             view.adapter = galleryAdapter
         }
 
-        if (viewModel.numberImages != 0) {
+        if (viewModel.numberImages.value != 0) {
             binding.imageNumber.visibility = View.VISIBLE
             binding.clearSelection.visibility = View.VISIBLE
-            binding.imageNumber.text = viewModel.numberImages.toString()
+            binding.imageNumber.text = viewModel.numberImages.value.toString()
         }
-        binding.startDate.text = viewModel.startDate
-        binding.stopDate.text = viewModel.stopDate
+        binding.startDate.text = viewModel.startDate.value
+        binding.stopDate.text = viewModel.stopDate.value
         initCalendarImage()
 
         setFragmentResultListener("requestKey") { _, bundle ->
@@ -76,9 +76,9 @@ class GalleryFragment: Fragment(){
             viewModel.setdateSelect(tag = false)
             initCalendarImage()
             if (finaldate != null && justdate != null) swapDates(datetime)
-            if (viewModel.startTag) binding.startDate.text = justdate else binding.stopDate.text= justdate
+            if (viewModel.startTag.value) binding.startDate.text = justdate else binding.stopDate.text= justdate
 
-            if (finaldate != null && justdate != null) viewModel.setDate(viewModel.startTag, datetime, justdate)
+            if (finaldate != null && justdate != null) viewModel.setDate(viewModel.startTag.value, datetime, justdate)
             checkConstraints()
         }
 
@@ -86,7 +86,7 @@ class GalleryFragment: Fragment(){
         binding.startLayout.setOnClickListener { onStartClick() }
         binding.stopLayout.setOnClickListener { onStopClick() }
 
-        if(viewModel.startDate!="" && viewModel.stopDate != "" && viewModel.selectedImages.count() > 0){
+        if(viewModel.startDate.value!="" && viewModel.stopDate.value!= "" && viewModel.selectedImages.value.count() > 0){
             binding.fab.show()
         }
         else{
@@ -116,16 +116,16 @@ class GalleryFragment: Fragment(){
     //Clickhandler
 
     private fun onImageClick(image: MediaStoreImage, posi: Int) {
-        if(viewModel.byImage){
+        if(viewModel.byImage.value){
             val justdate = SimpleDateFormat("dd.MM.yy").format(image.dateModified)
             val datetime = image.dateModified
 
             viewModel.setdateSelect(tag = false)
             initCalendarImage()
             swapDates(datetime)
-            if(viewModel.startTag) binding.startDate.text=justdate else binding.stopDate.text=justdate
+            if(viewModel.startTag.value) binding.startDate.text=justdate else binding.stopDate.text=justdate
 
-            viewModel.setDate(viewModel.startTag, datetime, justdate)
+            viewModel.setDate(viewModel.startTag.value, datetime, justdate)
             val recyclerview = binding.gallery
             val holder = recyclerview.findViewHolderForAdapterPosition(posi)
             val imageview = holder!!.itemView.findViewById<ImageView>(R.id.image)
@@ -170,7 +170,7 @@ class GalleryFragment: Fragment(){
     //Reusable funs
     private fun displayImagenum() {
         val imageNumber= binding.imageNumber
-        val intImagesSelected = viewModel.selectedImages.size
+        val intImagesSelected = viewModel.selectedImages.value.size
         val clearSelection = binding.clearSelection
 
 
@@ -187,13 +187,13 @@ class GalleryFragment: Fragment(){
 
     private fun handleSelection(select: Boolean, position: Int = -1){
         val recyclerview = binding.gallery
-        val viewIterator: ListIterator<Int> = viewModel.viewHolds.listIterator()
+        val viewIterator: ListIterator<Int> = viewModel.viewHolds.value.listIterator()
 
         if (position != -1){
             val holder = recyclerview.findViewHolderForAdapterPosition(position)
             val imageview = holder!!.itemView.findViewById<ImageView>(R.id.image)
 
-            if (viewModel.viewHolds.contains(position)){
+            if (viewModel.viewHolds.value.contains(position)){
                 imageview.isSelected = true
                 imageview.setColorFilter(Color.GRAY, PorterDuff.Mode.SCREEN)
                 imageview.setBackgroundResource(R.drawable.rounded_bg)
@@ -228,24 +228,24 @@ class GalleryFragment: Fragment(){
     }
 
     private fun checkConstraints(){
-        if(viewModel.startDate != "" && viewModel.stopDate != "" && viewModel.selectedImages.count() > 0)
+        if(viewModel.startDate.value!= "" && viewModel.stopDate.value!= "" && viewModel.selectedImages.value.count() > 0)
             binding.fab.show()
         else
             binding.fab.hide()
     }
 
     private fun applyChanges(){
-        val imageIterator: ListIterator<MediaStoreImage> = viewModel.selectedImages.listIterator()
+        val imageIterator: ListIterator<MediaStoreImage> = viewModel.selectedImages.value.listIterator()
         var imageToChange: MediaStoreImage
         val writeExif = WriteExifActivity()
         var fullPathNF: String
         val timeSpan: Long
         var dateToSet: Date
-        val startMillis: Long = viewModel.startDateTime.time
-        val stopMillis: Long = viewModel.stopDateTime.time
+        val startMillis: Long = viewModel.startDateTime.value.time
+        val stopMillis: Long = viewModel.stopDateTime.value.time
 
         if (Environment.isExternalStorageManager()){
-            timeSpan = (stopMillis - startMillis)/(viewModel.numberImages+1)
+            timeSpan = (stopMillis - startMillis)/(viewModel.numberImages.value+1)
 
             while (imageIterator.hasNext()) {
                 dateToSet = Date(startMillis+timeSpan*(imageIterator.nextIndex()+1))
@@ -261,28 +261,28 @@ class GalleryFragment: Fragment(){
     }
 
     private fun initCalendarImage(){
-        if (viewModel.startTag)
-            if (viewModel.dateSelect) binding.StartCalendar.setImageResource(R.drawable.ic_start_calendar_clicked)
+        if (viewModel.startTag.value)
+            if (viewModel.dateSelect.value) binding.StartCalendar.setImageResource(R.drawable.ic_start_calendar_clicked)
             else binding.StartCalendar.setImageResource(R.drawable.ic_start_calendar)
         else
-            if (viewModel.dateSelect) binding.StopCalendar.setImageResource(R.drawable.ic_stop_calendar_clicked)
+            if (viewModel.dateSelect.value) binding.StopCalendar.setImageResource(R.drawable.ic_stop_calendar_clicked)
             else binding.StopCalendar.setImageResource(R.drawable.ic_stop_calendar)
 
 
     }
     private fun swapDates(dateToCheck: Date) {
-        if (viewModel.startTag && viewModel.stopDate !=""){
-            if (viewModel.stopDateTime.time - dateToCheck.time < 0){
-                viewModel.setDate(viewModel.startTag, viewModel.stopDateTime, viewModel.stopDate)
-                binding.startDate.text= viewModel.startDate
-                viewModel.setTag(!viewModel.startTag)
+        if (viewModel.startTag.value && viewModel.stopDate.value!=""){
+            if (viewModel.stopDateTime.value.time - dateToCheck.time < 0){
+                viewModel.setDate(viewModel.startTag.value, viewModel.stopDateTime.value, viewModel.stopDate.value)
+                binding.startDate.text= viewModel.startDate.value
+                viewModel.setTag(!viewModel.startTag.value)
             }
         }
-        else if(!viewModel.startTag && viewModel.startDate !=""){
-            if (dateToCheck.time - viewModel.startDateTime.time < 0){
-                viewModel.setDate(viewModel.startTag, viewModel.startDateTime, viewModel.startDate)
-                binding.stopDate.text = viewModel.stopDate
-                viewModel.setTag(!viewModel.startTag)
+        else if(!viewModel.startTag.value && viewModel.startDate.value!=""){
+            if (dateToCheck.time - viewModel.startDateTime.value.time < 0){
+                viewModel.setDate(viewModel.startTag.value, viewModel.startDateTime.value, viewModel.startDate.value)
+                binding.stopDate.text = viewModel.stopDate.value
+                viewModel.setTag(!viewModel.startTag.value)
             }
         }
     }
@@ -309,7 +309,7 @@ class GalleryFragment: Fragment(){
                 .centerCrop()
                 .into(holder.imageView)
 
-            if (viewModel.viewHolds.contains(position)) {
+            if (viewModel.viewHolds.value.contains(position)) {
                 holder.imageView.setColorFilter(Color.LTGRAY, PorterDuff.Mode.SCREEN)
                 holder.imageView.isSelected = true
                 holder.imageView.setBackgroundResource(R.drawable.rounded_bg)
