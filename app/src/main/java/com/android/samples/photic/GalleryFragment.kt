@@ -24,6 +24,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.setFragmentResultListener
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ListAdapter
+import com.android.samples.photic.data.MediaStoreImage
 import com.android.samples.photic.databinding.GalleryFragmentBinding
 import com.android.samples.photic.viewmodels.GalleryFragmentViewModel
 import com.bumptech.glide.Glide

@@ -3,6 +3,7 @@ package com.android.samples.photic
 import android.view.View
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
+import com.android.samples.photic.data.MediaStoreImage
 
 class ImageViewHolder(view: View, onClick: (MediaStoreImage, Int) -> Unit) :
     RecyclerView.ViewHolder(view) {
