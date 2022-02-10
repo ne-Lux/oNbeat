@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.app.DatePickerDialog.OnDateSetListener
 import android.app.Dialog
+import android.content.DialogInterface
 import android.os.Bundle
 import android.widget.DatePicker
 import androidx.core.os.bundleOf
@@ -44,11 +45,10 @@ class DateTimePickerFragment : DialogFragment(), OnDateSetListener{
         setFragmentResult("requestKey", bundleOf("finalDate" to finalDateStr, "justDate" to justDateStr))
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
+    override fun onCancel(dialog: DialogInterface) {
+        super.onCancel(dialog)
         viewModel.setdateSelect(false)
         viewModel.setbyCalendar(tag = false)
         setFragmentResult("destroyedDPD", bundleOf("tag" to false))
-
     }
 }

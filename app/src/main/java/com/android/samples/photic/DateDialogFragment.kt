@@ -1,5 +1,6 @@
 package com.android.samples.photic
 
+import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -30,13 +31,12 @@ class DateDialogFragment: DialogFragment(R.layout.datedialog_fragment) {
         binding.sByImage.setOnClickListener { onImageClick() }
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
+    override fun onCancel(dialog: DialogInterface) {
+        super.onCancel(dialog)
         if(!viewModel.byCalendar.value && !viewModel.byImage.value){
             viewModel.setdateSelect(false)
             setFragmentResult("destroyedDD", bundleOf("tag" to false))
         }
-
     }
 
     private fun onImageClick(){
