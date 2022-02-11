@@ -33,10 +33,8 @@ class DateDialogFragment: DialogFragment(R.layout.datedialog_fragment) {
 
     override fun onCancel(dialog: DialogInterface) {
         super.onCancel(dialog)
-        if(!viewModel.byCalendar.value && !viewModel.byImage.value){
-            viewModel.setdateSelect(false)
-            setFragmentResult("destroyedDD", bundleOf("tag" to false))
-        }
+        viewModel.setdateSelect(false)
+        setFragmentResult("destroyedDD", bundleOf("tag" to false))
     }
 
     private fun onImageClick(){
@@ -46,7 +44,6 @@ class DateDialogFragment: DialogFragment(R.layout.datedialog_fragment) {
     }
 
     private fun onCalendarClick(){
-        viewModel.setbyCalendar(tag = true)
         dateTimePicker.show(parentFragmentManager,"DateTimePicker_tag")
         dismiss()
     }

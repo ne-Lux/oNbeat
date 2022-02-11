@@ -28,7 +28,6 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.android.samples.photic.GalleryFragment
 import com.android.samples.photic.data.MediaStoreImage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -66,13 +65,8 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
     val stopDateTime: StateFlow<Date> get() = _stopDateTime
     private var _byImage = MutableStateFlow(false)
     val byImage: StateFlow<Boolean> get() = _byImage
-    private var _byCalendar = MutableStateFlow(false)
-    val byCalendar: StateFlow<Boolean> get() = _byCalendar
     private var _dateSelect = MutableStateFlow(false)
     val dateSelect: StateFlow<Boolean> get() = _dateSelect
-    init {
-
-    }
 
     //----------------------------------------------------------------------------------------------------
     //Interface funs for fragments to set variables
@@ -111,10 +105,6 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
 
     fun setbyImage(tag: Boolean){
         _byImage.value = tag
-    }
-
-    fun setbyCalendar(tag: Boolean){
-        _byCalendar.value = tag
     }
 
     fun setdateSelect(tag:Boolean){

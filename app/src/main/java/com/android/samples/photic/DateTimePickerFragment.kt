@@ -48,7 +48,6 @@ class DateTimePickerFragment : DialogFragment(), OnDateSetListener{
     override fun onCancel(dialog: DialogInterface) {
         super.onCancel(dialog)
         viewModel.setdateSelect(false)
-        viewModel.setbyCalendar(tag = false)
         setFragmentResult("destroyedDPD", bundleOf("tag" to false))
     }
 }
