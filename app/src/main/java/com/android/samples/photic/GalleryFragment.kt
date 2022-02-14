@@ -53,9 +53,9 @@ class GalleryFragment: Fragment(){
             onImageClick(image, posi)
         }
 
-        binding.gallery.also { view ->
-            view.layoutManager = GridLayoutManager(requireContext(), 3)
-            view.adapter = galleryAdapter
+        binding.gallery.also { viewX ->
+            viewX.layoutManager = GridLayoutManager(requireContext(), 3)
+            viewX.adapter = galleryAdapter
         }
 
         if (viewModel.numberImages.value != 0) {
@@ -71,20 +71,20 @@ class GalleryFragment: Fragment(){
             val justdate = bundle.getString("justDate")
             val finaldate = bundle.getString("finalDate")
             val dateTimeFormat = SimpleDateFormat("yyyy:MM:dd HH:mm:ss")
-            val datetime = dateTimeFormat.parse(finaldate)
+            val datetime = dateTimeFormat.parse(finaldate!!)
 
             viewModel.setdateSelect(tag = false)
             initCalendarImage()
-            if (finaldate != null && justdate != null) swapDates(datetime)
+            if (justdate != null) swapDates(datetime!!)
             if (viewModel.startTag.value) binding.startDate.text = justdate else binding.stopDate.text= justdate
 
-            if (finaldate != null && justdate != null) viewModel.setDate(viewModel.startTag.value, datetime, justdate)
+            if (justdate != null) viewModel.setDate(viewModel.startTag.value, datetime!!, justdate)
             checkConstraints()
         }
-        setFragmentResultListener("destroyedDPD") {_, bundle ->
+        setFragmentResultListener("destroyedDPD") {_, _ ->
             initCalendarImage()
         }
-        setFragmentResultListener("destroyedDD") {_, bundle ->
+        setFragmentResultListener("destroyedDD") {_, _ ->
             initCalendarImage()
         }
 
