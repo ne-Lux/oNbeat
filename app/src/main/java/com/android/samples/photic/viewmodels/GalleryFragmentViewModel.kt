@@ -40,11 +40,6 @@ import java.util.concurrent.TimeUnit
 class GalleryFragmentViewModel(application: Application) : AndroidViewModel(application) {
     private val _images = MutableLiveData<List<MediaStoreImage>>()
     val images: LiveData<List<MediaStoreImage>> get() = _images
-
-/*
-    private val _images = MutableStateFlow<List<MediaStoreImage>>(ArrayList())
-    val images: StateFlow<List<MediaStoreImage>> get() = _images
-*/
     private var contentObserver: ContentObserver? = null
 
     private var _selectedImages = MutableStateFlow<MutableList<MediaStoreImage>>(ArrayList())
