@@ -40,7 +40,6 @@ class DateDialogFragment: DialogFragment(R.layout.datedialog_fragment) {
     private fun onImageClick(){
         viewModel.setbyImage(true)
         dismiss()
-        // TODO: Snackbar!
     }
 
     private fun onCalendarClick(){

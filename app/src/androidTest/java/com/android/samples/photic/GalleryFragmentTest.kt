@@ -5,30 +5,30 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.action.ViewActions.scrollTo
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.*
+import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.filters.LargeTest
-import androidx.test.rule.ActivityTestRule
+import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner
 import androidx.test.rule.GrantPermissionRule
-import androidx.test.runner.AndroidJUnit4
 import org.hamcrest.Description
 import org.hamcrest.Matcher
-import org.hamcrest.Matchers.`is`
-import org.hamcrest.Matchers.allOf
+import org.hamcrest.Matchers.*
 import org.hamcrest.TypeSafeMatcher
 import org.hamcrest.core.IsInstanceOf
-import org.hamcrest.core.IsNot.not
+import org.hamcrest.core.IsNot
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @LargeTest
-@RunWith(AndroidJUnit4::class)
+@RunWith(AndroidJUnit4ClassRunner::class)
 class GalleryFragmentTest {
 
     @Rule
     @JvmField
-    var mActivityTestRule = ActivityTestRule(MainActivity::class.java)
+    var mActivityTestRule = ActivityScenarioRule(MainActivity::class.java)
 
     @Rule
     @JvmField
@@ -74,7 +74,7 @@ class GalleryFragmentTest {
                 isDisplayed()
             )
         )
-        textView.check(matches(withText("1")))
+        textView.check(matches(isDisplayed()))
 
         val appCompatImageView2 = onView(
             allOf(
@@ -90,8 +90,133 @@ class GalleryFragmentTest {
             )
         )
         appCompatImageView2.perform(click())
-        onView(withId(R.id.image_number)).check(matches(not(isDisplayed())))
-        onView(withId(R.id.clear_selection)).check(matches(not(isDisplayed())))
+        onView(withId(R.id.image_number)).check(matches(IsNot.not(isDisplayed())))
+        onView(withId(R.id.clear_selection)).check(matches(IsNot.not(isDisplayed())))
+
+        val appCompatImageView3 = onView(
+            allOf(
+                withId(R.id.image),
+                childAtPosition(
+                    allOf(
+                        withId(R.id.imageLayout),
+                        childAtPosition(
+                            withId(R.id.gallery),
+                            0
+                        )
+                    ),
+                    0
+                ),
+                isDisplayed()
+            )
+        )
+        appCompatImageView3.perform(click())
+
+        val linearLayout = onView(
+            allOf(
+                withId(R.id.startLayout),
+                childAtPosition(
+                    childAtPosition(
+                        withClassName(`is`("android.widget.LinearLayout")),
+                        2
+                    ),
+                    0
+                ),
+                isDisplayed()
+            )
+        )
+        linearLayout.perform(click())
+
+        val linearLayout2 = onView(
+            allOf(
+                withId(R.id.sByImage),
+                childAtPosition(
+                    childAtPosition(
+                        withId(R.id.ImageOrDate),
+                        0
+                    ),
+                    0
+                ),
+                isDisplayed()
+            )
+        )
+        linearLayout2.perform(click())
+
+        val appCompatImageView4 = onView(
+            allOf(
+                withId(R.id.image),
+                childAtPosition(
+                    allOf(
+                        withId(R.id.imageLayout),
+                        childAtPosition(
+                            withId(R.id.gallery),
+                            1
+                        )
+                    ),
+                    0
+                ),
+                isDisplayed()
+            )
+        )
+        appCompatImageView4.perform(click())
+
+        onView(withId(R.id.startDate)).check(matches(withText(`is`(not(equalTo(""))))))
+
+        val linearLayout3 = onView(
+            allOf(
+                withId(R.id.stopLayout),
+                childAtPosition(
+                    childAtPosition(
+                        withClassName(`is`("android.widget.LinearLayout")),
+                        2
+                    ),
+                    1
+                ),
+                isDisplayed()
+            )
+        )
+        linearLayout3.perform(click())
+
+        val linearLayout4 = onView(
+            allOf(
+                withId(R.id.sByDate),
+                childAtPosition(
+                    childAtPosition(
+                        withId(R.id.ImageOrDate),
+                        0
+                    ),
+                    2
+                ),
+                isDisplayed()
+            )
+        )
+        linearLayout4.perform(click())
+
+        val materialButton = onView(
+            allOf(
+                withId(android.R.id.button1), withText("OK"),
+                childAtPosition(
+                    childAtPosition(
+                        withClassName(`is`("android.widget.ScrollView")),
+                        0
+                    ),
+                    3
+                )
+            )
+        )
+        materialButton.perform(scrollTo(), click())
+
+        onView(withId(R.id.stopDate)).check(matches(withText(`is`(not(equalTo(""))))))
+
+        val button = onView(
+            allOf(
+                withId(R.id.fab),
+                withText("APPLY"),
+                withContentDescription("Floating Action Button"),
+                withParent(withParent(withId(R.id.gallery_fragment))),
+                isDisplayed()
+            )
+        )
+        button.check(matches(isDisplayed()))
     }
 
     private fun childAtPosition(
