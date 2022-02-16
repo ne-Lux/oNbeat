@@ -20,15 +20,19 @@ import android.net.Uri
 import androidx.recyclerview.widget.DiffUtil
 import java.util.*
 
+/*
+Data Class that holds an Image of the MediaStore provided by the ContentResolver
+ */
 data class MediaStoreImage(
     val id: Long,
     val dateAdded: Date,
     val dateTaken: Date,
     val dateModified: Date,
-    val fNumber: String,
+    val fileName: String,
     val rPath: String,
     val contentUri: Uri
 ) {
+    //Calculate Updates for RecyclerView Adapter
     companion object {
         val DiffCallback = object : DiffUtil.ItemCallback<MediaStoreImage>() {
             override fun areItemsTheSame(oldItem: MediaStoreImage, newItem: MediaStoreImage) =
