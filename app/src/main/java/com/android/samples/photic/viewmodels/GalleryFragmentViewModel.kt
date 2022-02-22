@@ -153,7 +153,7 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
                 MediaStore.Images.Media.RELATIVE_PATH,
                 MediaStore.Images.Media.MIME_TYPE
             )
-            //Where the image ID is not empty (this is just a placeholder, to filter images)
+            //Where the MIME type is image/jpeg
             val selection = "${MediaStore.Images.Media.MIME_TYPE} = ?"
             val selectionArgs = arrayOf("image/jpeg")
             //Order by Date_Modified, descending
