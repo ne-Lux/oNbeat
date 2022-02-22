@@ -150,11 +150,12 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
                 MediaStore.Images.Media.DATE_TAKEN,
                 MediaStore.Images.Media.DATE_MODIFIED,
                 MediaStore.Images.Media.TITLE,
-                MediaStore.Images.Media.RELATIVE_PATH
+                MediaStore.Images.Media.RELATIVE_PATH,
+                MediaStore.Images.Media.MIME_TYPE
             )
             //Where the image ID is not empty (this is just a placeholder, to filter images)
-            val selection = "${MediaStore.Images.Media._ID} <> ?"
-            val selectionArgs = arrayOf("")
+            val selection = "${MediaStore.Images.Media.MIME_TYPE} = ?"
+            val selectionArgs = arrayOf("image/jpeg")
             //Order by Date_Modified, descending
             val sortOrder = "${MediaStore.Images.Media.DATE_MODIFIED}  DESC"
 
