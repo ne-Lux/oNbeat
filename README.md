@@ -20,8 +20,14 @@ Requirements
 - Android SDK 30
 - Android Device/Emulator API 30+
 
+Installation
+--------------
+
+At the moment PhotiC is not provided via Google Play Store, so you have to install the application by downloading the PhotiC.apk file and executing it on your Android 11+ smartphone or tablet. During the installation you will be asked for your explicit agreement on installing software from an unknown source, that you have to consent.
+
 User Instructions
 --------------
+
 To reorder images using PhotiC, you need to have at least one image selected and two dates chosen. 
 
 1. Image selecting: You can select images by simply clicking on them. The number of selected images is displayed in the toolbar. Deselecting of single images works the same way like selecting images - by clicking on them. If you want to deselect all images, you can click the red cancel icon in the toolbar beside the number of images selected.
