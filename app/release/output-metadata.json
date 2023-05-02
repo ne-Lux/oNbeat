@@ -4,7 +4,7 @@
     "type": "APK",
     "kind": "Directory"
   },
-  "applicationId": "com.android.samples.photic",
+  "applicationId": "com.android.samples.oNbeat",
   "variantName": "release",
   "elements": [
     {

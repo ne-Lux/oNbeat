@@ -13,7 +13,7 @@ android {
         }
     }
     defaultConfig {
-        applicationId "com.android.samples.photic"
+        applicationId "com.android.samples.oNbeat"
         minSdkVersion 30
         targetSdkVersion 31
         versionCode 1
@@ -27,6 +27,7 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+    namespace 'com.android.samples.oNbeat'
 }
 
 dependencies {
@@ -50,4 +51,16 @@ dependencies {
     androidTestImplementation "androidx.test.ext:junit:$ext_junit_version"
     androidTestImplementation "androidx.test.espresso:espresso-core:$espresso_version"
     androidTestImplementation "androidx.test:rules:$test_rules_version"
+
+    //Resolve dependency conflicts
+    def lifecycle_version = "2.4.0"
+    implementation "androidx.lifecycle:lifecycle-viewmodel:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
+
+    //Tensorflow
+    implementation 'org.tensorflow:tensorflow-lite-task-vision:0.4.0'
+    implementation 'org.tensorflow:tensorflow-lite-gpu-delegate-plugin:0.4.0'
+    implementation 'org.tensorflow:tensorflow-lite-gpu:2.9.0'
+    implementation 'org.tensorflow:tensorflow-lite-select-tf-ops:2.12.0'
+
 }
