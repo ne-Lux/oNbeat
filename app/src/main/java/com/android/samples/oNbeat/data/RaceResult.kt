@@ -24,25 +24,23 @@ import java.util.*
 Data Class that holds an Image of the MediaStore provided by the ContentResolver
  */
 data class RaceResult(
-    val id: Long,
-    val dateAdded: Date,
-    val dateTaken: Date,
-    val dateModified: Date,
-    val fileName: String,
-    val rPath: String,
-    val contentUri: Uri,
-    val startTime: Long = 0,
-    val startImage: String = "",
-    val finishTime: Long = 0,
-    val finishImage: String = "",
-    val totalTime: Long = 0,
-    val raceNumber: Int = 0
+    val raceNumber: Int,
+    var startTime: Long = 0,
+    var startImage: String = "",
+    //Todo: Sample image benennen
+    var contentUriStart: Uri = Uri.parse(""),
+    var finishTime: Long = 0,
+    var finishImage: String = "",
+    //Todo: Sample image benennen
+    var contentUriFinish: Uri = Uri.parse(""),
+    var totalTime: Long = 0,
 ) {
     //Calculate Updates for RecyclerView Adapter
     companion object {
         val DiffCallback = object : DiffUtil.ItemCallback<RaceResult>() {
             override fun areItemsTheSame(oldItem: RaceResult, newItem: RaceResult) =
-                oldItem.id == newItem.id
+                //TODO("geht das und braucht man das?")
+                oldItem.raceNumber == newItem.raceNumber
 
             override fun areContentsTheSame(oldItem: RaceResult, newItem: RaceResult) =
                 oldItem == newItem

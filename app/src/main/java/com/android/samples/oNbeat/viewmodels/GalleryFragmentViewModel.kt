@@ -18,7 +18,6 @@ package com.android.samples.oNbeat.viewmodels
 
 import android.app.Application
 import android.content.ContentResolver
-import android.content.ContentUris
 import android.database.ContentObserver
 import android.net.Uri
 import android.os.Handler
@@ -29,13 +28,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.android.samples.oNbeat.data.RaceResult
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.util.Date
-import java.util.concurrent.TimeUnit
 
 /*
 Shared ViewModel for GalleryFragment, that is also accessed by DateDialogFragment and DateTimePickerFragment
@@ -44,6 +39,10 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
     //Variables stored inside the ViewModel and the read-only companions that can be accessed by the Fragments
     private val _images = MutableLiveData<List<RaceResult>>()
     val images: LiveData<List<RaceResult>> get() = _images
+
+    private var _results = MutableStateFlow(mutableListOf<RaceResult>())
+    val results: StateFlow<List<RaceResult>> get() = _results
+
     private var contentObserver: ContentObserver? = null
     private var _selectedImages = MutableStateFlow<MutableList<RaceResult>>(ArrayList())
     val selectedImages: StateFlow<List<RaceResult>> get() = _selectedImages
@@ -123,9 +122,9 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
     fun loadImages() {
         //Loading images is launched as Coroutine, so that the main thread is not blocked
         viewModelScope.launch {
-            val imageList = queryImages()
+            //val imageList = queryImages()
             //The images provided by the ContentResolver are stored inside the ViewModel
-            _images.value = (imageList)
+            //_images.value = (imageList)
 
             //Register a ContentObserver,  to Update the imagelist when images are changed
             if (contentObserver == null) {
@@ -138,12 +137,8 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
         }
     }
 
-    private suspend fun queryImages(): List<RaceResult> {
+    /*private suspend fun queryImages(): List<RaceResult> {
         val images = mutableListOf<RaceResult>()
-
-        TODO("Adapt to oNbeat")
-        // ImageView.setImageURI(Uri.fromFile(new File("/sdcard/cats.jpg")));
-        // ImageView.setImageURI(Uri.parse(new File("/sdcard/cats.jpg").toString()));
         withContext(Dispatchers.IO) {
 
             //Select all attributes in projection from images
@@ -204,8 +199,31 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
             }
         }
         return images
-    }
+    }'*/
 
+
+    private fun registerRaceNumber (raceNumber: Int, imagePath: String, start: Boolean, time: Long){
+        val uri = Uri.parse(imagePath)
+        if (start) {
+            val result = RaceResult(raceNumber = raceNumber, startTime = time, startImage = imagePath, contentUriStart = uri)
+            _results.value.add(result)
+        }
+        else {
+            val filteredRaceNumber = _results.value.indexOfFirst { it.raceNumber == raceNumber}
+            if (filteredRaceNumber != -1){
+                with(_results.value[filteredRaceNumber]) {
+                    finishTime = time
+                    finishImage = imagePath
+                    contentUriFinish = uri
+                    totalTime = time - startTime
+                }
+            }
+            else {
+                val result = RaceResult(raceNumber = raceNumber, finishTime = time, finishImage = imagePath, contentUriFinish = uri)
+                _results.value.add(result)
+            }
+        }
+    }
     //unregister the ContentObserver when the ViewModel is destroyed (e.g. the application is closed)
     override fun onCleared() {
         contentObserver?.let {
