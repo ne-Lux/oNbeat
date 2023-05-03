@@ -24,7 +24,7 @@ import java.util.*
 Data Class that holds an Image of the MediaStore provided by the ContentResolver
  */
 data class RaceResult(
-    val raceNumber: Int,
+    var raceNumber: Int,
     var startTime: Long = 0,
     var startImage: String = "",
     //Todo: Sample image benennen

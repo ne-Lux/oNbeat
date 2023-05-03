@@ -202,7 +202,7 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
     }'*/
 
 
-    private fun registerRaceNumber (raceNumber: Int, imagePath: String, start: Boolean, time: Long){
+    fun registerRaceNumber (raceNumber: Int, imagePath: String, start: Boolean, time: Long){
         val uri = Uri.parse(imagePath)
         if (start) {
             val result = RaceResult(raceNumber = raceNumber, startTime = time, startImage = imagePath, contentUriStart = uri)
