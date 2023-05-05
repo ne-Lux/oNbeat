@@ -5,7 +5,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.PorterDuff
-import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
@@ -42,9 +41,14 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
     private val buttonClick = AlphaAnimation(0f, 1f)
     private val datedialogFragment = DateDialogFragment()
     private lateinit var odf:  ObjectDetectionFragment
-    private var reqPermissions = arrayOf(
+    private val reqPermissionsStorage = arrayOf(
         Manifest.permission.READ_EXTERNAL_STORAGE,
         Manifest.permission.WRITE_EXTERNAL_STORAGE
+    )
+    private val reqPermissionsNetwork = arrayOf(
+        Manifest.permission.INTERNET,
+        Manifest.permission.ACCESS_NETWORK_STATE,
+        Manifest.permission.ACCESS_WIFI_STATE
     )
 
     //Initiate the binding
@@ -61,7 +65,7 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
         odf = ObjectDetectionFragment(context = requireContext(), objectDetectorListener = this)
 
         // ToDo: Ist an dieser Stelle nur zum ausprobieren
-        odf.detectObjects("Teststring")
+        //odf.detectObjects("Teststring")
 
         //Set onClickListener for images inside the gallery
         val galleryAdapter = GalleryAdapter { image, posi ->
@@ -131,6 +135,17 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
             initCalendarImage()
         }
 
+        // -----------------------------------------------------------------------------------------------
+
+        if (!haveNetworkPermission()) {
+            permReqLauncher.launch(reqPermissionsNetwork)
+            startServer()
+        }
+        else {
+            startServer()
+        }
+
+        // -----------------------------------------------------------------------------------------------
         //Observe the imagelist and hand it to the GalleryAdapter, so that a new image list is displayed
         viewModel.images.observe(viewLifecycleOwner) { images ->
             galleryAdapter.submitList(images)
@@ -139,7 +154,7 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
         //Check permission
         if (!haveStoragePermission()) {
             //Show the Permission Request Launcher, if there is no permission
-            permReqLauncher.launch(reqPermissions)
+            permReqLauncher.launch(reqPermissionsStorage)
             //Check the External Storage Manager Permission
         } else if (!Environment.isExternalStorageManager()) {
             //Show the External Storage Manager Request, if there is no permission
@@ -152,12 +167,18 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
         }
     }
 
+    private fun startServer() {
+        val newIntent = Intent(requireContext(), ServerSocketActivity::class.java)
+        startActivity(newIntent)
+    }
+
     //----------------------------------------------------------------------------------------------------
     //Clickhandler
 
     //ClickHandler for image
     private fun onImageClick(image: RaceResult, posi: Int) {
         //If Date by image selection is active
+        /*
         if(viewModel.byImage.value && viewModel.dateSelect.value){
             //Format the dateModified of the image
             val justdate = SimpleDateFormat("dd.MM.yy").format(image.dateModified)
@@ -196,6 +217,8 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
         }
         //Check if constraints to display the fab are already fulfilled
         checkConstraints()
+
+         */
     }
 
     //ClickHandler for clear button
@@ -224,6 +247,7 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
 
     //ClickHandler for fab
     private fun applyChanges(){
+        /*
         val imageIterator: ListIterator<RaceResult> = viewModel.selectedImages.value.listIterator()
         var imageToChange: RaceResult
         val writeExif = WriteExifActivity()
@@ -256,6 +280,8 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
             //Show the dialog to grant the permission
             externalStorageManager()
         }
+
+         */
     }
 
     //----------------------------------------------------------------------------------------------------
@@ -407,7 +433,7 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
 
             //Bind the image as a thumbnail into the ImageView using Glide
             Glide.with(holder.imageView)
-                .load(mediaStoreImage.contentUri)
+                .load(mediaStoreImage.contentUriStart)
                 .thumbnail(0.33f)
                 .centerCrop()
                 .into(holder.imageView)
@@ -440,6 +466,12 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
     private fun haveStoragePermission():Boolean {
         return ((ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
                 && (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED))
+        //The result of externalStorageManager is not checked immediately. It is checked every time an image is about to be changed.
+    }
+    private fun haveNetworkPermission():Boolean {
+        return ((ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.INTERNET) == PackageManager.PERMISSION_GRANTED)
+                && (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_NETWORK_STATE) == PackageManager.PERMISSION_GRANTED)
+                && (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_WIFI_STATE) == PackageManager.PERMISSION_GRANTED))
         //The result of externalStorageManager is not checked immediately. It is checked every time an image is about to be changed.
     }
 
