@@ -41,6 +41,7 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
     private val buttonClick = AlphaAnimation(0f, 1f)
     private val datedialogFragment = DateDialogFragment()
     private lateinit var odf:  ObjectDetectionFragment
+    private lateinit var ssa: ServerSocketActivity
     private val reqPermissionsStorage = arrayOf(
         Manifest.permission.READ_EXTERNAL_STORAGE,
         Manifest.permission.WRITE_EXTERNAL_STORAGE
@@ -55,7 +56,6 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = GalleryFragmentBinding.inflate(inflater, container, false)
         return binding.root
-
     }
 
     //fun onViewCreated defines onClickListener and restores the Fragment according to the ViewModel-Variables
@@ -80,7 +80,7 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
         //Bind the GalleryAdapter to the RecyclerView-Grid
         binding.gallery.also { viewX ->
             viewX.layoutManager = GridLayoutManager(requireContext(), 1)
-            viewX.adapter = galleryAdapter
+             viewX.adapter = galleryAdapter
         }
 
         //Restore the number of already selected images icon and the clear button, if there are already selected images
@@ -139,12 +139,16 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
 
         if (!haveNetworkPermission()) {
             permReqLauncher.launch(reqPermissionsNetwork)
-            startServer()
+            //TODO("Overlay über der Inflation....")
+            ssa = ServerSocketActivity()
         }
         else {
-            startServer()
+            //TODO("Overlay über der Inflation")
+            //startServer()
+            ssa = ServerSocketActivity()
+            ssa.startServerThread()
         }
-
+/*
         // -----------------------------------------------------------------------------------------------
         //Observe the imagelist and hand it to the GalleryAdapter, so that a new image list is displayed
         viewModel.images.observe(viewLifecycleOwner) { images ->
@@ -159,15 +163,16 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
         } else if (!Environment.isExternalStorageManager()) {
             //Show the External Storage Manager Request, if there is no permission
             externalStorageManager()
-            showImages()
         }
         //Every permission is granted
         else {
-            showImages()
+
         }
+
+ */
     }
 
-    private fun startServer() {
+    fun startServer() {
         val newIntent = Intent(requireContext(), ServerSocketActivity::class.java)
         startActivity(newIntent)
     }
@@ -455,10 +460,6 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
         }
     }
 
-    private fun showImages() {
-        viewModel.loadImages()
-    }
-
     //----------------------------------------------------------------------------------------------------
     //Permission handling
 
@@ -487,9 +488,11 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
                 if(!Environment.isExternalStorageManager()) {
                     //Show the External Storage Manager Request, if there is no permission
                     externalStorageManager()
-                    showImages()
+
                 }
-                else showImages()
+                else {
+
+                }
             }
             //If the permissions are not granted, show a Toast.
             else Toast.makeText(requireContext(),R.string.permission_not_granted, Toast.LENGTH_LONG).show()

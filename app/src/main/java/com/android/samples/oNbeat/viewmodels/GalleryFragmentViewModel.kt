@@ -18,6 +18,7 @@ package com.android.samples.oNbeat.viewmodels
 
 import android.app.Application
 import android.content.ContentResolver
+import android.content.ContentUris
 import android.database.ContentObserver
 import android.net.Uri
 import android.os.Handler
@@ -30,7 +31,10 @@ import androidx.lifecycle.viewModelScope
 import com.android.samples.oNbeat.data.RaceResult
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.io.File
+import java.nio.file.Path
 import java.util.Date
+import kotlin.io.path.Path
 
 /*
 Shared ViewModel for GalleryFragment, that is also accessed by DateDialogFragment and DateTimePickerFragment
@@ -119,40 +123,21 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
 
     //----------------------------------------------------------------------------------------------------
     //Load images from storage
-    fun loadImages() {
+    fun returnImageUri(filePath: String) {
         //Loading images is launched as Coroutine, so that the main thread is not blocked
-        viewModelScope.launch {
-            //val imageList = queryImages()
-            //The images provided by the ContentResolver are stored inside the ViewModel
-            //_images.value = (imageList)
-
-            //Register a ContentObserver,  to Update the imagelist when images are changed
-            if (contentObserver == null) {
-                contentObserver = getApplication<Application>().contentResolver.registerObserver(
-                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-                ) {
-                    loadImages()
-                }
-            }
-        }
+        val rPath = Path(filePath)
+        val iUri = rPath.toUri()
     }
 
-    /*private suspend fun queryImages(): List<RaceResult> {
-        val images = mutableListOf<RaceResult>()
-        withContext(Dispatchers.IO) {
+    /*private suspend fun queryImage(filePath: String): Uri {
+
 
             //Select all attributes in projection from images
             val projection = arrayOf(
                 MediaStore.Images.Media._ID,
-                MediaStore.Images.Media.DATE_ADDED,
-                MediaStore.Images.Media.DATE_TAKEN,
-                MediaStore.Images.Media.DATE_MODIFIED,
-                MediaStore.Images.Media.TITLE,
-                MediaStore.Images.Media.RELATIVE_PATH,
-                MediaStore.Images.Media.MIME_TYPE
             )
             //Where the MIME type is image/jpeg
-            val selection = "${MediaStore.Images.Media.MIME_TYPE} = ?"
+            val selection = "${MediaStore.Images.Media.RELATIVE_PATH} = ?"
             val selectionArgs = arrayOf("image/jpeg")
             //Order by Date_Modified, descending
             val sortOrder = "${MediaStore.Images.Media.DATE_MODIFIED}  DESC"
@@ -180,26 +165,17 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
                 //For each element inside the cursor
                 while (cursor.moveToNext()) {
                     val id = cursor.getLong(idColumn)
-                    val dateAdded =
-                        Date(TimeUnit.SECONDS.toMillis(cursor.getLong(dateAddedColumn)))
-                    val dateTaken =
-                        Date(TimeUnit.SECONDS.toMillis(cursor.getLong(dateTakenColumn)))
-                    val dateModified =
-                        Date(TimeUnit.SECONDS.toMillis(cursor.getLong(dateModifiedColumn)))
-                    val fileName = cursor.getString(fileNameColumn)
-                    val rPath = cursor.getString(rPathColumn)
                     val contentUri = ContentUris.withAppendedId(
                         MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                         id)
 
                     //Create a MediaStoreImage with the attributes from the cursor and add it to the list, that will be stored inside the ViewModel
-                    val image = RaceResult(id, dateAdded, dateTaken, dateModified, fileName, rPath, contentUri)
-                    images += image
+                    val image = contentUri
                 }
             }
         }
-        return images
-    }'*/
+        return image
+    }*/
 
 
     fun registerRaceNumber (raceNumber: Int, imagePath: String, start: Boolean, time: Long){
