@@ -1,6 +1,5 @@
 package com.palatin.mercurial.data
 
-import com.palatin.mercurial.data.model.FTPRemoteConfig
 import org.apache.commons.net.ftp.FTP
 import org.apache.commons.net.ftp.FTPClient
 import org.apache.commons.net.ftp.FTPFile

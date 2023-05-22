@@ -2,8 +2,13 @@ package com.android.samples.oNbeat
 
 import android.R
 import android.app.Activity
+import androidx.activity.viewModels
 import android.os.Bundle
 import android.widget.EditText
+import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.activityViewModels
+import com.android.samples.oNbeat.viewmodels.FTPClientViewModel
+import com.android.samples.oNbeat.viewmodels.GalleryFragmentViewModel
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
@@ -12,10 +17,12 @@ import java.net.ServerSocket
 import java.net.Socket
 import java.util.Scanner
 
-class ServerSocketActivity : Activity() {
+class ServerSocketActivity : AppCompatActivity() {
+    private val viewModel: FTPClientViewModel by viewModels()
     private var serverThread: Thread? = null
     private var serverSocket: ServerSocket? = null
     private var port = 29391
+
 
     fun startServerThread () {
         serverThread = Thread(ServerRunnable())
@@ -43,7 +50,9 @@ class ServerSocketActivity : Activity() {
                     val commThread = CommunicationThread(socket)
                     Thread(commThread).start()
                     // Thread { ClientHandler(socket).run() }
-                    println("Client connected: ${socket.inetAddress.hostAddress}")
+                    val socketIP = socket.inetAddress.hostAddress
+                    println("Client connected: $socketIP")
+                    viewModel.setIP(socketIP)
                 } catch (e: IOException) {
                     e.printStackTrace()
                 }
