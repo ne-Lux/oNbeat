@@ -20,7 +20,7 @@
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
 
-    <string name="permission_not_granted">App requires access to storage to access items stored in MediaStore.</string>
+    <string name="permission_not_granted">oNbeat requires access to storage and network to work properly.</string>
 
     <string name="datehint">01.01.70</string>
     <string name="fab_apply">Apply</string>

@@ -1,97 +1,194 @@
-package com.palatin.mercurial.data
+package com.android.samples.oNbeat
 
 import org.apache.commons.net.ftp.FTP
 import org.apache.commons.net.ftp.FTPClient
 import org.apache.commons.net.ftp.FTPFile
+import org.apache.commons.net.ftp.FTPReply
+import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.InetAddress
-import java.net.URI
+import java.net.SocketException
 
 class FTPClient {
 
-    private var ftpClient: FTPClient? = null
+    private var ftpClient = FTPClient()
+    var isConnected = false
+        private set
 
-    fun connect(ftpRemoteConfig: FTPRemoteConfig): Status {
-        return try {
-            dissconnect()
-            ftpClient = FTPClient()
-            ftpClient!!.defaultTimeout = 5000
-            ftpClient!!.connect(URI(ftpRemoteConfig.link).host)
-            ftpClient!!.enterLocalPassiveMode()
-            ftpClient!!.setFileType(FTP.BINARY_FILE_TYPE)
-            if(ftpRemoteConfig.username.isNotBlank() && !ftpClient!!.login(ftpRemoteConfig.username, ftpRemoteConfig.password))
-                throw InvalidCredentialsException()
-            Status.Connected
-        } catch (ex: InvalidCredentialsException) {
-            Status.InvalidCredentials
-        } catch (ex: Exception) {
-            Status.Unknown
-        }
-    }
-
-    fun dissconnect() {
+    /*fun connect(hostname: String) {
         try {
-            ftpClient?.logout()
-            ftpClient?.disconnect()
-        } catch (ex: Exception) {
+            val address = InetAddress.getByName(hostname)
+            ftpClient.connect(address)
+            val replyCode = ftpClient.replyCode
+            println("Code: $replyCode ${ftpClient.replyStrings.joinToString("")}")
+            isConnected = FTPReply.isPositiveCompletion(replyCode)
+            if (!isConnected) {
+                println("Disconnecting")
+                ftpClient.disconnect()
+            }
+        } catch (ex: IOException) {
+            ex.printStackTrace()
+        }
+    }*/
+
+    fun connect(hostAddress: String, port: Int) {
+        try {
+            val address: InetAddress = InetAddress.getByName(hostAddress)
+            ftpClient.connect(address, port)
+            val replyCode = ftpClient.replyCode
+            isConnected = FTPReply.isPositiveCompletion(replyCode)
+            if (!isConnected) {
+                println("Disconnecting")
+                ftpClient.disconnect()
+            }
+        } catch (ex: IOException) {
             ex.printStackTrace()
         }
     }
 
-    fun getFiles(parent: String): Resource<Array<FTPFile>> {
-        return try {
-            ftpClient?.changeWorkingDirectory("")
-            Resource.success(ftpClient?.listFiles(parent))
-        } catch (ex: Exception) {
-            Resource.error(ex.localizedMessage, null)
+    fun login(username: String, password: String) {
+        try {
+            ftpClient.login(username, password)
+
+            ftpClient.setFileType(FTP.BINARY_FILE_TYPE)
+            ftpClient.enterLocalPassiveMode()
+        } catch (ex: IOException) {
+            ex.printStackTrace()
         }
     }
 
-    fun getFile(path: String, fileName: String, outStream: OutputStream): Resource<Unit> {
-        return try {
-            ftpClient?.changeWorkingDirectory(path)
-            if(ftpClient?.retrieveFile(fileName, outStream) == true)
-                Resource.success(Unit)
-            else Resource.error(null, Unit)
-        } catch (ex: Exception) {
+    /*fun getFiles(path: String = ""): Array<FTPFile> {
+        var files = emptyArray<FTPFile>()
+        try {
+            files = ftpClient.listFiles(path)
+        } catch (ex: IOException) {
             ex.printStackTrace()
-            Resource.error(ex.localizedMessage, Unit)
-        }
-
-    }
-
-    fun newFolder(folderName: String, folderPath: String): Resource<Unit> {
-        return try {
-            ftpClient?.changeWorkingDirectory(folderPath)
-            if(ftpClient?.makeDirectory(folderName) == true)
-                Resource.success(Unit)
-            else Resource.error(null, Unit)
-        } catch (ex: Exception) {
+        } catch (ex: SocketException) {
             ex.printStackTrace()
-            Resource.error(ex.localizedMessage, Unit)
-        }
-    }
-
-    fun addFile(filePath: String, folderPath: String, inputStream: InputStream): Resource<Unit> {
-        return try {
-            ftpClient?.changeWorkingDirectory(folderPath)
-            if(ftpClient?.storeFile(filePath, inputStream) == true)
-                Resource.success(Unit)
-            else Resource.error(null, Unit)
-        } catch (ex: Exception) {
-            ex.printStackTrace()
-            Resource.error(ex.localizedMessage, Unit)
         } finally {
-            inputStream.close()
+            println("Code ${ftpClient.replyCode} Reply ${ftpClient.replyStrings.joinToString("")}")
+        }
+        return files
+    }*/
+
+    /*fun getDirectories(path: String = ""): Array<FTPFile> {
+        var files = emptyArray<FTPFile>()
+        try {
+            files = ftpClient.listDirectories(path)
+        } catch (ex: IOException) {
+            ex.printStackTrace()
+        } catch (ex: SocketException) {
+            ex.printStackTrace()
+        }
+        return files
+    }*/
+
+    /*fun getFileNames(path: String = "") : Array<String> {
+        var files = emptyArray<String>()
+        try {
+            files = ftpClient.listNames(path)
+        } catch (ex: IOException) {
+            ex.printStackTrace()
+        }
+        return files
+    }*/
+
+    fun logout() {
+        try {
+            ftpClient.logout()
+        } catch (ex: IOException) {
+            ex.printStackTrace()
         }
     }
 
-    sealed class Status {
-        object Connected : Status()
-        object InvalidCredentials : Status()
-        object Unknown : Status()
+    /*fun changeDir(path: String, goToParent: Boolean = false) {
+        try {
+            if (goToParent) {
+                ftpClient.changeToParentDirectory()
+            } else {
+                ftpClient.changeWorkingDirectory(path)
+            }
+        } catch (ex: IOException) {
+            ex.printStackTrace()
+        } catch (ex: SocketException) {
+            ex.printStackTrace()
+        }
+    }*/
+
+    fun getCurrentPath(): String {
+        var result = ""
+        try {
+            result = ftpClient.printWorkingDirectory()
+        } catch (ex: IOException) {
+            ex.printStackTrace()
+        } catch (ex: SocketException) {
+            ex.printStackTrace()
+        }
+        return result
+    }
+
+    fun deleteFile(fileName: String) {
+        try {
+            val exists = ftpClient.deleteFile(fileName)
+            println("File exists and deleted $exists")
+        } catch (ex: IOException) {
+            ex.printStackTrace()
+        } catch (ex: SocketException) {
+            ex.printStackTrace()
+        }
+    }
+
+    /*fun createDir(dirName: String) {
+        try {
+            val created = ftpClient.makeDirectory(dirName)
+            println("Dir created ${created}")
+        } catch (ex: IOException) {
+            ex.printStackTrace()
+        } catch (ex: SocketException) {
+            ex.printStackTrace()
+        }
+    }*/
+
+    /*fun removeDir(dirName: String) {
+        try {
+            val removed = ftpClient.removeDirectory(dirName)
+            println("Dir removed ${removed}")
+        } catch (ex: IOException) {
+            ex.printStackTrace()
+        } catch (ex: SocketException) {
+            ex.printStackTrace()
+        }
+    }*/
+
+    fun downloadFile(file: FTPFile, outputStream: OutputStream) {
+        try {
+            val downloaded = ftpClient.retrieveFile(file.name, outputStream)
+            println("File downloaded $downloaded")
+        } catch (ex: IOException) {
+            ex.printStackTrace()
+        } catch (ex: SocketException) {
+            ex.printStackTrace()
+        }
+    }
+
+    /*fun uploadFile(fileName: String, inputStream: InputStream) {
+        try {
+            val uploaded = ftpClient.appendFile(fileName, inputStream)
+            println("File uploaded $uploaded")
+        } catch (ex: IOException) {
+            ex.printStackTrace()
+        } catch (ex: SocketException) {
+            ex.printStackTrace()
+        }
+    }*/
+
+    fun disconnect() {
+        try {
+            ftpClient.disconnect()
+            isConnected = false
+        } catch (ex: IOException) {
+            ex.printStackTrace()
+        }
     }
 }
-
-class InvalidCredentialsException : Exception()

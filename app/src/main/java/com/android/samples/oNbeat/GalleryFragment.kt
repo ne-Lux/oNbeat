@@ -5,10 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.PorterDuff
-import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
-import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -139,15 +136,14 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
 
         if (!haveNetworkPermission()) {
             permReqLauncher.launch(reqPermissionsNetwork)
-            //TODO("Overlay über der Inflation....")
-            ssa = ServerSocketActivity()
         }
-        else {
-            //TODO("Overlay über der Inflation")
-            //startServer()
-            ssa = ServerSocketActivity()
-            ssa.startServerThread()
+        if (!haveStoragePermission()) {
+            permReqLauncher.launch(reqPermissionsStorage)
         }
+        //TODO("Overlay über der Inflation")
+        ssa = ServerSocketActivity()
+        ssa.startServerThread()
+
 /*
         // -----------------------------------------------------------------------------------------------
         //Observe the imagelist and hand it to the GalleryAdapter, so that a new image list is displayed
@@ -175,6 +171,16 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
     fun startServer() {
         val newIntent = Intent(requireContext(), ServerSocketActivity::class.java)
         startActivity(newIntent)
+    }
+
+    //---------------------------------------------------------------------------------------------------
+
+    fun connectFTPServer() {
+        TODO("Machen")
+        val ftpClient = FTPClient()
+        ftpClient.connect("192.168.0.104", 21)
+        println("Connected: ${ftpClient.isConnected}")
+        ftpClient.login("ftpclient001", "qwerty")
     }
 
     //----------------------------------------------------------------------------------------------------
@@ -483,32 +489,13 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
                 it.value
             }
             //Check if the needed permissions are granted
-            if (permissionReqRes) {
-                //Check the External Storage Manager Permission
-                if(!Environment.isExternalStorageManager()) {
-                    //Show the External Storage Manager Request, if there is no permission
-                    externalStorageManager()
-
-                }
-                else {
-
-                }
+            if (!permissionReqRes) {
+                //If the permissions are not granted, show a Toast.
+                Toast.makeText(requireContext(),R.string.permission_not_granted, Toast.LENGTH_LONG).show()
             }
-            //If the permissions are not granted, show a Toast.
-            else Toast.makeText(requireContext(),R.string.permission_not_granted, Toast.LENGTH_LONG).show()
         }
 
     //Show the view to grant the External Storage Manager Permission
-    private fun externalStorageManager(){
-        val uri = Uri.parse("package:${BuildConfig.APPLICATION_ID}")
-        startActivity(
-            Intent(
-                Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
-                uri
-            )
-        )
-    }
-
     // ############################ TF PART
 
     override fun onError(error: String) {

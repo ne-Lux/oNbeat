@@ -18,6 +18,11 @@ class FTPClientViewModel(application: Application) : AndroidViewModel(applicatio
     val userName: StateFlow<String> get() = _userName
     private var _pW = MutableStateFlow("esp32")
     val pW: StateFlow<String> get() = _pW
+    private var _picDownloadOne = MutableStateFlow<MutableList<String>>(ArrayList())
+    val picDownloadOne: StateFlow<List<String>> get() = _picDownloadOne
+    private var _picDownloadTwo = MutableStateFlow<MutableList<String>>(ArrayList())
+    val picDownloadTwo: StateFlow<List<String>> get() = _picDownloadTwo
+
 
 // Set the IP address of the ESP32
     fun setIP(ipAddress: String?){
@@ -27,6 +32,13 @@ class FTPClientViewModel(application: Application) : AndroidViewModel(applicatio
             } else {
                 _hostTwo.value = ipAddress
             }
+        }
+    }
+    fun addPic2Download (ipAddress: String, picName: String){
+        if (ipAddress == hostOne.value){
+            _picDownloadOne.value.add(picName)
+        } else {
+            _picDownloadTwo.value.add(picName)
         }
     }
 }

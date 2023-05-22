@@ -1,21 +1,13 @@
 package com.android.samples.oNbeat
 
-import android.R
-import android.app.Activity
 import androidx.activity.viewModels
-import android.os.Bundle
-import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.activityViewModels
 import com.android.samples.oNbeat.viewmodels.FTPClientViewModel
-import com.android.samples.oNbeat.viewmodels.GalleryFragmentViewModel
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
-import java.net.InetAddress
 import java.net.ServerSocket
 import java.net.Socket
-import java.util.Scanner
 
 class ServerSocketActivity : AppCompatActivity() {
     private val viewModel: FTPClientViewModel by viewModels()
@@ -27,11 +19,6 @@ class ServerSocketActivity : AppCompatActivity() {
     fun startServerThread () {
         serverThread = Thread(ServerRunnable())
         serverThread!!.start()
-    }
-
-    fun OnDataReceive (data: String) {
-        println(data)
-        println("hallo")
     }
 
     internal inner class ServerRunnable : Runnable {
@@ -62,6 +49,7 @@ class ServerSocketActivity : AppCompatActivity() {
 
     internal inner class CommunicationThread(clientSocket: Socket): Runnable {
         private var input: BufferedReader
+        private var ipAdress: String = clientSocket.inetAddress.toString()
 
         init {
             try {
@@ -74,17 +62,11 @@ class ServerSocketActivity : AppCompatActivity() {
         }
 
         override fun run() {
-            println("Nummer 1")
             while (!Thread.currentThread().isInterrupted) {
-            // while (true) {
-                println("Nummer 2")
                 try {
-                    println("Nummer 3")
-                    // TODO("Handle the received message")
-                    val read = input.read()
-                    println("Nummer 4")
-                    runOnUiThread(Runnable { this@ServerSocketActivity.OnDataReceive(read.toString()) })
-
+                    val read = input.read().toString()
+                    println(read)
+                    viewModel.addPic2Download(ipAdress, read)
                 } catch (e: IOException) {
                     e.printStackTrace()
                 }
@@ -103,36 +85,6 @@ class ServerSocketActivity : AppCompatActivity() {
             serverThread!!.interrupt()
         } catch (e: Exception) {
             e.printStackTrace()
-        }
-    }
-}
-
-/// ------------------------------------------------------------------------------------------------
-/// Alternative zur Class CommunicationThread
-class ClientHandler(client: Socket) {
-    private val reader: Scanner = Scanner(client.getInputStream())
-    private var running: Boolean = false
-
-    fun run() {
-        running = true
-        println("running started")
-        // Welcome message
-
-        while (running) {
-            println("running")
-            try {
-                val text = reader.nextLine()
-                if (text == "EXIT") {
-                    continue
-                }
-
-                println(text)
-            } catch (ex: Exception) {
-                // TODO: Implement exception handling
-            } finally {
-
-            }
-
         }
     }
 }
