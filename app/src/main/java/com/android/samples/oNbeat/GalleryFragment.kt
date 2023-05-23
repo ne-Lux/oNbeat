@@ -16,6 +16,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.setFragmentResultListener
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import com.android.samples.oNbeat.data.RaceResult
@@ -66,6 +67,29 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
         odf = ObjectDetectionFragment(context = requireContext(), objectDetectorListener = this)
         ftpClient1 = FTPClient()
         ftpClient2 = FTPClient()
+
+        // Observer for List that contains files to be downloaded - ESP1&2
+        val esp1Observer = Observer<MutableList<String>> { imagesToDownload ->
+            if (imagesToDownload.isNotEmpty()){
+                println("Incoming Picture")
+                if (!ftpClient1.isConnected) {
+                    connectFTPServer(true)
+                }
+                downloadFiles(imagesToDownload, true)
+                println("Downloading....")
+            }
+        }
+
+        val esp2Observer = Observer<MutableList<String>> { imagesToDownload ->
+            if (imagesToDownload.isNotEmpty()){
+                println("Incoming Picture")
+                if (!ftpClient2.isConnected) {
+                    connectFTPServer(false)
+                }
+                downloadFiles(imagesToDownload, false)
+                println("Downloading....")
+            }
+        }
 
         // ToDo: Ist an dieser Stelle nur zum ausprobieren
         //odf.detectObjects("Teststring")
@@ -145,25 +169,8 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
         }
 
         // Register observers for the list that contains the images to be downloaded
-        ftpViewModel.picDownloadOne.observe(viewLifecycleOwner) { imagesToDownload ->
-            println("checking")
-            if (imagesToDownload.isNotEmpty()){
-                println("Incoming Picture")
-                if (!ftpClient1.isConnected) {
-                    connectFTPServer(true)
-                }
-            downloadFiles(imagesToDownload, true)
-                println("Downloading....")
-            }
-        }
-        ftpViewModel.picDownloadTwo.observe(viewLifecycleOwner) { imagesToDownload ->
-            if (imagesToDownload.isNotEmpty()) {
-                if (!ftpClient2.isConnected) {
-                    connectFTPServer(false)
-                }
-                downloadFiles(imagesToDownload, false)
-            }
-        }
+        ftpViewModel.picDownloadOne.observe(this, esp1Observer)
+        ftpViewModel.picDownloadTwo.observe(this, esp2Observer)
     }
 
     //---------------------------------------------------------------------------------------------------
