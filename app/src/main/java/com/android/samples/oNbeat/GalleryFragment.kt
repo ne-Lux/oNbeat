@@ -1,7 +1,6 @@
 package com.android.samples.oNbeat
 
 import android.Manifest
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.PorterDuff
@@ -21,11 +20,14 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import com.android.samples.oNbeat.data.RaceResult
 import com.android.samples.oNbeat.databinding.GalleryFragmentBinding
+import com.android.samples.oNbeat.viewmodels.FTPClientViewModel
 import com.android.samples.oNbeat.viewmodels.GalleryFragmentViewModel
 import com.bumptech.glide.Glide
 import org.tensorflow.lite.task.vision.detector.Detection
+import java.nio.file.Files
 import java.text.SimpleDateFormat
-import java.util.*
+import kotlin.io.path.Path
+import kotlin.io.path.outputStream
 
 /*
 GalleryFragment that displays the main fragment and handles the associated button-clicks
@@ -34,6 +36,10 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
 
     //Initiate ViewModel, binding, permissions and other variables
     private val viewModel: GalleryFragmentViewModel by activityViewModels()
+    private val ftpViewModel: FTPClientViewModel by activityViewModels()
+    private lateinit var ftpClient1: FTPClient
+    private lateinit var ftpClient2: FTPClient
+    private val directoryPath: String = "/storage/emulated/0/Android/data/oNbeat/"
     private lateinit var binding: GalleryFragmentBinding
     private val buttonClick = AlphaAnimation(0f, 1f)
     private val datedialogFragment = DateDialogFragment()
@@ -58,6 +64,8 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         odf = ObjectDetectionFragment(context = requireContext(), objectDetectorListener = this)
+        ftpClient1 = FTPClient()
+        ftpClient2 = FTPClient()
 
         // ToDo: Ist an dieser Stelle nur zum ausprobieren
         //odf.detectObjects("Teststring")
@@ -68,8 +76,6 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
         }
         //Set onClickListener for all buttons
         binding.clearSelection.setOnClickListener { onClearClick() }
-        binding.startLayout.setOnClickListener { onStartStopClick(tag = true) }
-        binding.stopLayout.setOnClickListener { onStartStopClick(tag = false) }
         binding.fab.setOnClickListener { applyChanges() }
 
         //Bind the GalleryAdapter to the RecyclerView-Grid
@@ -110,7 +116,6 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
             //Restore ic_start/stop_calendar (not clicked)
             initCalendarImage()
             //Call swapDates to swap start- and stopdate, if stopdate is earlier than startdate
-            swapDates(datetime)
             //Write the date to the specified label
             if (viewModel.startTag.value) binding.startDate.text = justdate else binding.stopDate.text= justdate
             //Store the date inside the ViewModel
@@ -138,38 +143,54 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
         if (!haveStoragePermission()) {
             permReqLauncher.launch(reqPermissionsStorage)
         }
-/*
-        // -----------------------------------------------------------------------------------------------
-        //Observe the imagelist and hand it to the GalleryAdapter, so that a new image list is displayed
-        viewModel.images.observe(viewLifecycleOwner) { images ->
-            galleryAdapter.submitList(images)
-        }
 
-        //Check permission
-        if (!haveStoragePermission()) {
-            //Show the Permission Request Launcher, if there is no permission
-            permReqLauncher.launch(reqPermissionsStorage)
-            //Check the External Storage Manager Permission
-        } else if (!Environment.isExternalStorageManager()) {
-            //Show the External Storage Manager Request, if there is no permission
-            externalStorageManager()
+        // Register observers for the list that contains the images to be downloaded
+        ftpViewModel.picDownloadOne.observe(viewLifecycleOwner) { imagesToDownload ->
+            println("checking")
+            if (imagesToDownload.isNotEmpty()){
+                println("Incoming Picture")
+                if (!ftpClient1.isConnected) {
+                    connectFTPServer(true)
+                }
+            downloadFiles(imagesToDownload, true)
+                println("Downloading....")
+            }
         }
-        //Every permission is granted
-        else {
-
+        ftpViewModel.picDownloadTwo.observe(viewLifecycleOwner) { imagesToDownload ->
+            if (imagesToDownload.isNotEmpty()) {
+                if (!ftpClient2.isConnected) {
+                    connectFTPServer(false)
+                }
+                downloadFiles(imagesToDownload, false)
+            }
         }
-
- */
     }
 
     //---------------------------------------------------------------------------------------------------
+    private fun downloadFiles(imagesToDownload: MutableList<String>, firstESP32: Boolean){
+        for (image in imagesToDownload){
+            //TODO("choose appropriate file Path")
+            val destFilePath = "$directoryPath$image.jpg"
+            if (!Files.exists(Path(destFilePath))) Files.createDirectory(Path(destFilePath))
+            val newFile = Files.createFile(Path(destFilePath))
+            if (firstESP32){
+                ftpClient1.downloadFile("$image.jpg", newFile.outputStream())
+                ftpViewModel.downloadCompleted(image, true)
+            } else {
+                ftpClient2.downloadFile("$image.jpg", newFile.outputStream())
+                ftpViewModel.downloadCompleted(image, false)
+            }
 
-    fun connectFTPServer() {
-        TODO("Machen")
-        val ftpClient = FTPClient()
-        ftpClient.connect("192.168.0.104", 21)
-        println("Connected: ${ftpClient.isConnected}")
-        ftpClient.login("ftpclient001", "qwerty")
+        }
+    }
+    private fun connectFTPServer(firstESP32: Boolean) {
+        if (firstESP32){
+            ftpClient1.connect(ftpViewModel.hostOne.value, ftpViewModel.ftpPort.value)
+            ftpClient1.login(ftpViewModel.userName.value, ftpViewModel.pW.value)
+        } else {
+            ftpClient2.connect(ftpViewModel.hostTwo.value, ftpViewModel.ftpPort.value)
+            ftpClient2.login(ftpViewModel.userName.value, ftpViewModel.pW.value)
+        }
     }
 
     //----------------------------------------------------------------------------------------------------
@@ -233,55 +254,8 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
         checkConstraints()
     }
 
-    //ClickHandler for start/stopdate
-    private fun onStartStopClick(tag: Boolean){
-        //Set date selection mode for start/stopdate
-        viewModel.setTag(tag = tag)
-        viewModel.setdateSelect(tag = true)
-        //Show the DateDialogFragment
-        datedialogFragment.show(parentFragmentManager,"DateDialog_tag")
-        //Restore ic_start/stop_calendar (clicked)
-        initCalendarImage()
-    }
-
-
-    //ClickHandler for fab
     private fun applyChanges(){
-        /*
-        val imageIterator: ListIterator<RaceResult> = viewModel.selectedImages.value.listIterator()
-        var imageToChange: RaceResult
-        val writeExif = WriteExifActivity()
-        var fullPathNF: String
-        val timeSpan: Long
-        var dateToSet: Date
-        val startMillis: Long = viewModel.startDateTime.value.time
-        val stopMillis: Long = viewModel.stopDateTime.value.time
-
-        //If External Storage Permission is granted (needed to change images)
-        if (Environment.isExternalStorageManager()){
-            //Calculate the timespan between start- and stopdate
-            timeSpan = (stopMillis - startMillis)/(viewModel.numberImages.value+1)
-
-            //Iterate over all images to change
-            while (imageIterator.hasNext()) {
-                //Calculate the target date for n-th images as: startdate + n*timespan
-                dateToSet = Date(startMillis+timeSpan*(imageIterator.nextIndex()+1))
-                imageToChange = imageIterator.next()
-                //Change the attributes of the image
-                fullPathNF = writeExif.apply(imageToChange.rPath, imageToChange.fileName, dateToSet)
-                //Scan the new image, so that it is displayed in the image gallery
-                MediaScannerConnection.scanFile(requireContext(), arrayOf(fullPathNF), arrayOf("image/jpeg"),null)
-            }
-            //Deselect all images
-            onClearClick()
-        }
-        //If External Storage Permission is not granted (needed to change images)
-        else {
-            //Show the dialog to grant the permission
-            externalStorageManager()
-        }
-
-         */
+        //MediaScannerConnection.scanFile(requireContext(), arrayOf(fullPathNF), arrayOf("image/jpeg"),null)
     }
 
     //----------------------------------------------------------------------------------------------------
@@ -387,31 +361,6 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
             else binding.StopCalendar.setImageResource(R.drawable.ic_stop_calendar)
     }
 
-    //Fun to swap start- and stopdate, if stopdate is before startdate
-    private fun swapDates(dateToCheck: Date) {
-        //If startdate should be chosen, and stopdate is already selected
-        if (viewModel.startTag.value && viewModel.stopDate.value!=""){
-            //If the difference between these dates is negative (should be positive) --> swap dates
-            if (viewModel.stopDateTime.value.time - dateToCheck.time < 0){
-                //Set the already chosen stopdate as startdate
-                viewModel.setDate(viewModel.startTag.value, viewModel.stopDateTime.value, viewModel.stopDate.value)
-                binding.startDate.text= viewModel.startDate.value
-                //Swap tag
-                viewModel.setTag(!viewModel.startTag.value)
-            }
-        }
-        //If stopdate should be chosen, and startdate is already selected
-        else if(!viewModel.startTag.value && viewModel.startDate.value!=""){
-            //If the difference between these dates is negative (should be positive) --> swap dates
-            if (dateToCheck.time - viewModel.startDateTime.value.time < 0){
-                //Set the already chosen startdate as stopdate
-                viewModel.setDate(viewModel.startTag.value, viewModel.startDateTime.value, viewModel.startDate.value)
-                binding.stopDate.text = viewModel.stopDate.value
-                //Swap tag
-                viewModel.setTag(!viewModel.startTag.value)
-            }
-        }
-    }
 
     //----------------------------------------------------------------------------------------------------
     //Galleryadapter

@@ -161,9 +161,10 @@ class FTPClient {
         }
     }*/
 
-    fun downloadFile(file: FTPFile, outputStream: OutputStream) {
+    fun downloadFile(file: String, outputStream: OutputStream) {
         try {
-            val downloaded = ftpClient.retrieveFile(file.name, outputStream)
+            val fileName = file + ".jpg"
+            val downloaded = ftpClient.retrieveFile(fileName, outputStream)
             println("File downloaded $downloaded")
         } catch (ex: IOException) {
             ex.printStackTrace()

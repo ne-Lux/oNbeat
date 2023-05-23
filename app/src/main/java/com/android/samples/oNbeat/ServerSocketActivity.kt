@@ -1,7 +1,6 @@
 package com.android.samples.oNbeat
 
 import android.os.Bundle
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.android.samples.oNbeat.viewmodels.FTPClientViewModel
@@ -23,9 +22,10 @@ class ServerSocketActivity : AppCompatActivity() {
         println("Created")
         viewModel = ViewModelProvider(this)[FTPClientViewModel::class.java]
         startServerThread()
+
     }
 
-    fun startServerThread () {
+    private fun startServerThread () {
         serverThread = Thread(ServerRunnable())
         serverThread!!.start()
     }
@@ -59,12 +59,11 @@ class ServerSocketActivity : AppCompatActivity() {
 
     internal inner class CommunicationThread(clientSocket: Socket): Runnable {
         private var input: BufferedReader
-        private var ipAdress: String = clientSocket.inetAddress.toString()
+        private var ipAddress: String = clientSocket.inetAddress.hostAddress
 
         init {
             try {
                 input = BufferedReader(InputStreamReader(clientSocket.getInputStream()))
-                println("Bufferedreader gestartet")
             } catch (e: IOException) {
                 TODO("Bei exception connection closen?")
                 e.printStackTrace()
@@ -74,9 +73,8 @@ class ServerSocketActivity : AppCompatActivity() {
         override fun run() {
             while (!Thread.currentThread().isInterrupted) {
                 try {
-                    val read = input.read().toString()
-                    println(read)
-                    //viewModel.addPic2Download(ipAdress, read)
+                    val read = input.readLine()
+                    viewModel.addPic2Download(ipAddress, read)
                 } catch (e: IOException) {
                     e.printStackTrace()
                 }
