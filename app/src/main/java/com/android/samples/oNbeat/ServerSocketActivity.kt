@@ -1,7 +1,9 @@
 package com.android.samples.oNbeat
 
+import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 import com.android.samples.oNbeat.viewmodels.FTPClientViewModel
 import java.io.BufferedReader
 import java.io.IOException
@@ -10,11 +12,18 @@ import java.net.ServerSocket
 import java.net.Socket
 
 class ServerSocketActivity : AppCompatActivity() {
-    private val viewModel: FTPClientViewModel by viewModels()
     private var serverThread: Thread? = null
     private var serverSocket: ServerSocket? = null
     private var port = 29391
+    private lateinit var viewModel: FTPClientViewModel
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+        println("Created")
+        viewModel = ViewModelProvider(this)[FTPClientViewModel::class.java]
+        startServerThread()
+    }
 
     fun startServerThread () {
         serverThread = Thread(ServerRunnable())
@@ -40,6 +49,7 @@ class ServerSocketActivity : AppCompatActivity() {
                     val socketIP = socket.inetAddress.hostAddress
                     println("Client connected: $socketIP")
                     viewModel.setIP(socketIP)
+                    println(viewModel.hostOne.value)
                 } catch (e: IOException) {
                     e.printStackTrace()
                 }
@@ -66,7 +76,7 @@ class ServerSocketActivity : AppCompatActivity() {
                 try {
                     val read = input.read().toString()
                     println(read)
-                    viewModel.addPic2Download(ipAdress, read)
+                    //viewModel.addPic2Download(ipAdress, read)
                 } catch (e: IOException) {
                     e.printStackTrace()
                 }

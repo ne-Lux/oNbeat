@@ -38,7 +38,6 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
     private val buttonClick = AlphaAnimation(0f, 1f)
     private val datedialogFragment = DateDialogFragment()
     private lateinit var odf:  ObjectDetectionFragment
-    private lateinit var ssa: ServerSocketActivity
     private val reqPermissionsStorage = arrayOf(
         Manifest.permission.READ_EXTERNAL_STORAGE,
         Manifest.permission.WRITE_EXTERNAL_STORAGE
@@ -58,7 +57,6 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
     //fun onViewCreated defines onClickListener and restores the Fragment according to the ViewModel-Variables
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         odf = ObjectDetectionFragment(context = requireContext(), objectDetectorListener = this)
 
         // ToDo: Ist an dieser Stelle nur zum ausprobieren
@@ -140,10 +138,6 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
         if (!haveStoragePermission()) {
             permReqLauncher.launch(reqPermissionsStorage)
         }
-        //TODO("Overlay über der Inflation")
-        ssa = ServerSocketActivity()
-        ssa.startServerThread()
-
 /*
         // -----------------------------------------------------------------------------------------------
         //Observe the imagelist and hand it to the GalleryAdapter, so that a new image list is displayed
@@ -166,11 +160,6 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
         }
 
  */
-    }
-
-    fun startServer() {
-        val newIntent = Intent(requireContext(), ServerSocketActivity::class.java)
-        startActivity(newIntent)
     }
 
     //---------------------------------------------------------------------------------------------------
