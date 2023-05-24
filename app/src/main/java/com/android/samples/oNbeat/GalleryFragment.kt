@@ -78,7 +78,7 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
             println("fired")
             if (imagesToDownload.isNotEmpty()){
                 println("Incoming Picture")
-                ftpClient = FTPClient(true, imagesToDownload)
+                ftpClient = FTPClient(ftpViewModel.hostOne.value, ftpViewModel.ftpPort.value, ftpViewModel.userName.value, ftpViewModel.pW.value, imagesToDownload)
                 ftpThread = Thread(ftpClient)
                 ftpThread!!.start()
                 println("Download completed!")
@@ -88,7 +88,7 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
         val esp2Observer = Observer<MutableList<String>?> { imagesToDownload ->
             if (imagesToDownload.isNotEmpty()){
                 println("Incoming Picture")
-                ftpClient = FTPClient(false, imagesToDownload)
+                ftpClient = FTPClient(ftpViewModel.hostTwo.value, ftpViewModel.ftpPort.value, ftpViewModel.userName.value, ftpViewModel.pW.value, imagesToDownload)
                 ftpThread = Thread(ftpClient)
                 ftpThread!!.start()
                 println("Downloading....")

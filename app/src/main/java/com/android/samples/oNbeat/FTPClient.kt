@@ -1,8 +1,6 @@
 package com.android.samples.oNbeat
 
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
-import com.android.samples.oNbeat.viewmodels.FTPClientViewModel
 import org.apache.commons.net.ftp.FTP
 import org.apache.commons.net.ftp.FTPClient
 import org.apache.commons.net.ftp.FTPReply
@@ -16,27 +14,19 @@ import java.nio.file.Files
 import kotlin.io.path.Path
 
 
-class FTPClient(private val firstESP32: Boolean, private val downloadList: List<String>): Runnable, Fragment() {
+class FTPClient(private val host: String, private val port: Int, private val user: String, private val pw: String, private val downloadList: List<String>): Runnable {
 
     private var ftpClient = FTPClient()
     private val directoryPath: String = "/storage/emulated/0/DCIM/oNbeat/"
-    private val ftpViewModel: FTPClientViewModel by activityViewModels()
-    private var host: String = ""
-    var isConnected = false
-        private set
+    private var isConnected = false
 
     init {
         println("init")
     }
     override fun run() {
         println("run")
-        host = if (firstESP32) {
-            ftpViewModel.hostOne.value
-        } else {
-            ftpViewModel.hostTwo.value
-        }
-        connect(host, ftpViewModel.ftpPort.value)
-        login(ftpViewModel.userName.value, ftpViewModel.pW.value)
+        connect(host, port)
+        login(user, pw)
         println("logged in")
         for (file in downloadList) {
             val fileName = "picture_$file.jpg"
@@ -49,7 +39,7 @@ class FTPClient(private val firstESP32: Boolean, private val downloadList: List<
             val success = downloadFile(fileName, oFile )
             oFile.close()
             if (success) {
-                ftpViewModel.downloadCompleted(file, firstESP32)
+                //ftpViewModel.downloadCompleted(file, firstESP32)
                 deleteFile(fileName)
             } else {
                 newFile.delete()
