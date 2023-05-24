@@ -17,9 +17,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.setFragmentResultListener
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.get
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import com.android.samples.oNbeat.data.RaceResult
@@ -30,8 +27,10 @@ import com.bumptech.glide.Glide
 import org.tensorflow.lite.task.vision.detector.Detection
 import java.nio.file.Files
 import java.text.SimpleDateFormat
+import java.util.concurrent.Executor
 import kotlin.io.path.Path
 import kotlin.io.path.outputStream
+
 
 /*
 GalleryFragment that displays the main fragment and handles the associated button-clicks
@@ -42,9 +41,11 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
     private val viewModel: GalleryFragmentViewModel by activityViewModels()
     private val ftpViewModel: FTPClientViewModel by activityViewModels()
 
-    private lateinit var ftpClient1: FTPClient
-    private lateinit var ftpClient2: FTPClient
-    private val directoryPath: String = "/storage/emulated/0/Android/data/oNbeat/"
+    private var ftpThread: Thread? = null
+    private lateinit var ftpClient: FTPClient
+    private val executor: Executor? = null
+
+
     private lateinit var binding: GalleryFragmentBinding
     private val buttonClick = AlphaAnimation(0f, 1f)
     private val datedialogFragment = DateDialogFragment()
@@ -69,8 +70,6 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         odf = ObjectDetectionFragment(context = requireContext(), objectDetectorListener = this)
-        ftpClient1 = FTPClient()
-        ftpClient2 = FTPClient()
 
         println("GalleryFragment")
         // Observer for List that contains files to be downloaded - ESP1&2
@@ -78,21 +77,20 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
             println("fired")
             if (imagesToDownload.isNotEmpty()){
                 println("Incoming Picture")
-                if (!ftpClient1.isConnected) {
-                    connectFTPServer(true)
-                }
-                downloadFiles(imagesToDownload, true)
-                println("Downloading....")
+                ftpClient = FTPClient(ftpViewModel.hostOne.value, ftpViewModel.ftpPort.value, ftpViewModel.userName.value, ftpViewModel.pW.value, imagesToDownload)
+                ftpThread = Thread(ftpClient)
+                ftpThread!!.start()
+                println("Download completed!")
+                //Todo("Remove imagestoDownload from ViewModel Variable")
             }
         }
 
         val esp2Observer = Observer<MutableList<String>?> { imagesToDownload ->
             if (imagesToDownload.isNotEmpty()){
                 println("Incoming Picture")
-                if (!ftpClient2.isConnected) {
-                    connectFTPServer(false)
-                }
-                downloadFiles(imagesToDownload, false)
+                ftpClient = FTPClient(ftpViewModel.hostTwo.value, ftpViewModel.ftpPort.value, ftpViewModel.userName.value, ftpViewModel.pW.value, imagesToDownload)
+                ftpThread = Thread(ftpClient)
+                ftpThread!!.start()
                 println("Downloading....")
             }
         }
@@ -179,32 +177,31 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
         ftpViewModel.picDownloadTwo.observe(viewLifecycleOwner, esp2Observer)
     }
 
-    //---------------------------------------------------------------------------------------------------
+    // -------------------------------------------------------------------------------------------------
+    // FTP Client functions
+    // -------------------------------------------------------------------------------------------------
+
+    // Connect to FTP Server and perform login
+    /*
+    private fun connectFTPServer(firstESP32: Boolean) {
+        println("connectFTPServer")
+        if (firstESP32){
+                ftpClient1.connect(ftpViewModel.hostOne.value, ftpViewModel.ftpPort.value)
+                ftpClient1.login(ftpViewModel.userName.value, ftpViewModel.pW.value)
+        } else {
+            Thread {
+                ftpClient2.connect(ftpViewModel.hostTwo.value, ftpViewModel.ftpPort.value)
+                ftpClient2.login(ftpViewModel.userName.value, ftpViewModel.pW.value)
+            }.start()
+        }
+    }
+
+    // Download specified files from FTP Server
     private fun downloadFiles(imagesToDownload: MutableList<String>, firstESP32: Boolean){
         for (image in imagesToDownload){
-            //TODO("choose appropriate file Path")
-            val destFilePath = "$directoryPath$image.jpg"
-            if (!Files.exists(Path(destFilePath))) Files.createDirectory(Path(destFilePath))
-            val newFile = Files.createFile(Path(destFilePath))
-            if (firstESP32){
-                ftpClient1.downloadFile("$image.jpg", newFile.outputStream())
-                ftpViewModel.downloadCompleted(image, true)
-            } else {
-                ftpClient2.downloadFile("$image.jpg", newFile.outputStream())
-                ftpViewModel.downloadCompleted(image, false)
-            }
-
         }
     }
-    private fun connectFTPServer(firstESP32: Boolean) {
-        if (firstESP32){
-            ftpClient1.connect(ftpViewModel.hostOne.value, ftpViewModel.ftpPort.value)
-            ftpClient1.login(ftpViewModel.userName.value, ftpViewModel.pW.value)
-        } else {
-            ftpClient2.connect(ftpViewModel.hostTwo.value, ftpViewModel.ftpPort.value)
-            ftpClient2.login(ftpViewModel.userName.value, ftpViewModel.pW.value)
-        }
-    }
+     */
 
     //----------------------------------------------------------------------------------------------------
     //Clickhandler

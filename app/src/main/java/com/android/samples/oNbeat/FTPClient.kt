@@ -2,37 +2,50 @@ package com.android.samples.oNbeat
 
 import org.apache.commons.net.ftp.FTP
 import org.apache.commons.net.ftp.FTPClient
-import org.apache.commons.net.ftp.FTPFile
 import org.apache.commons.net.ftp.FTPReply
+import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
-import java.io.InputStream
 import java.io.OutputStream
 import java.net.InetAddress
 import java.net.SocketException
+import java.nio.file.Files
+import kotlin.io.path.Path
+import kotlin.io.path.outputStream
 
-class FTPClient {
+
+class FTPClient(private val host: String, private val port: Int, private val user: String, private val pw: String, private val downloadList: List<String>): Runnable {
 
     private var ftpClient = FTPClient()
+    private val directoryPath: String = "/storage/emulated/0/Android/data/oNbeat/"
     var isConnected = false
         private set
 
-    /*fun connect(hostname: String) {
-        try {
-            val address = InetAddress.getByName(hostname)
-            ftpClient.connect(address)
-            val replyCode = ftpClient.replyCode
-            println("Code: $replyCode ${ftpClient.replyStrings.joinToString("")}")
-            isConnected = FTPReply.isPositiveCompletion(replyCode)
-            if (!isConnected) {
-                println("Disconnecting")
-                ftpClient.disconnect()
-            }
-        } catch (ex: IOException) {
-            ex.printStackTrace()
-        }
-    }*/
+    init {
+        println("init")
+    }
+    override fun run() {
+        println("run")
+        connect(host, port)
+        login(user, pw)
+        println("logged in")
+        for (file in downloadList) {
+            val destFilePath = "$directoryPath$file.jpg"
+            if (!Files.exists(Path(directoryPath))) Files.createDirectory(Path(directoryPath))
+            val newFile = File(destFilePath)
+            newFile.createNewFile()
+            val oFile = FileOutputStream(newFile, false)
 
-    fun connect(hostAddress: String, port: Int) {
+            downloadFile("$file.jpg", oFile )
+
+            oFile.close()
+
+        }
+        logout()
+        disconnect()
+    }
+
+    private fun connect(hostAddress: String, port: Int) {
         try {
             val address: InetAddress = InetAddress.getByName(hostAddress)
             ftpClient.connect(address, port)
@@ -47,7 +60,7 @@ class FTPClient {
         }
     }
 
-    fun login(username: String, password: String) {
+    private fun login(username: String, password: String) {
         try {
             ftpClient.login(username, password)
 
@@ -94,7 +107,7 @@ class FTPClient {
         return files
     }*/
 
-    fun logout() {
+    private fun logout() {
         try {
             ftpClient.logout()
         } catch (ex: IOException) {
@@ -161,7 +174,7 @@ class FTPClient {
         }
     }*/
 
-    fun downloadFile(file: String, outputStream: OutputStream) {
+    private fun downloadFile(file: String, outputStream: OutputStream) {
         try {
             val fileName = file + ".jpg"
             val downloaded = ftpClient.retrieveFile(fileName, outputStream)
@@ -184,7 +197,7 @@ class FTPClient {
         }
     }*/
 
-    fun disconnect() {
+    private fun disconnect() {
         try {
             ftpClient.disconnect()
             isConnected = false
