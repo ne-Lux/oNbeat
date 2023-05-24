@@ -1,7 +1,9 @@
 package com.android.samples.oNbeat
 
 import android.os.Bundle
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.android.samples.oNbeat.viewmodels.FTPClientViewModel
 import java.io.BufferedReader
@@ -14,15 +16,13 @@ class ServerSocketActivity : AppCompatActivity() {
     private var serverThread: Thread? = null
     private var serverSocket: ServerSocket? = null
     private var port = 29391
-    private lateinit var viewModel: FTPClientViewModel
+    private val viewModel: FTPClientViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        println("Created")
-        viewModel = ViewModelProvider(this)[FTPClientViewModel::class.java]
+        println("ServerSocketActivity")
         startServerThread()
-
     }
 
     private fun startServerThread () {

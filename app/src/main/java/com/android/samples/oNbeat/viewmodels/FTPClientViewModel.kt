@@ -4,12 +4,12 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.util.Date
 
-class FTPClientViewModel(application: Application) : AndroidViewModel(application) {
-
+class FTPClientViewModel() : ViewModel() {
     private var _ftpPort = MutableStateFlow(21)
     val ftpPort: StateFlow<Int> get() = _ftpPort
     private var _hostOne = MutableStateFlow("")
@@ -20,10 +20,10 @@ class FTPClientViewModel(application: Application) : AndroidViewModel(applicatio
     val userName: StateFlow<String> get() = _userName
     private var _pW = MutableStateFlow("esp32")
     val pW: StateFlow<String> get() = _pW
-    private var _picDownloadOne = MutableLiveData<MutableList<String>>(ArrayList())
-    val picDownloadOne: LiveData<MutableList<String>> get() = _picDownloadOne
-    private var _picDownloadTwo = MutableLiveData<MutableList<String>>(ArrayList())
-    val picDownloadTwo: LiveData<MutableList<String>> get() = _picDownloadTwo
+    private var _picDownloadOne = MutableLiveData<MutableList<String>?>(ArrayList())
+    val picDownloadOne: LiveData<MutableList<String>?> get() = _picDownloadOne
+    private var _picDownloadTwo = MutableLiveData<MutableList<String>?>(ArrayList())
+    val picDownloadTwo: LiveData<MutableList<String>?> get() = _picDownloadTwo
 
 
 // Set the IP address of the ESP32
@@ -37,10 +37,12 @@ class FTPClientViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
     fun addPic2Download (ipAddress: String, picName: String){
+        val currentList = _picDownloadOne.value
+        currentList?.add(picName)
         if (ipAddress == hostOne.value){
-            _picDownloadOne.value?.add(picName)
+            _picDownloadOne.postValue(currentList)
         } else {
-            _picDownloadTwo.value?.add(picName)
+            _picDownloadTwo.postValue(currentList)
         }
     }
 

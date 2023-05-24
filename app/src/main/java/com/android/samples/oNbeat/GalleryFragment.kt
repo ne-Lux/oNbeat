@@ -17,6 +17,9 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.setFragmentResultListener
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.get
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import com.android.samples.oNbeat.data.RaceResult
@@ -38,6 +41,7 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
     //Initiate ViewModel, binding, permissions and other variables
     private val viewModel: GalleryFragmentViewModel by activityViewModels()
     private val ftpViewModel: FTPClientViewModel by activityViewModels()
+
     private lateinit var ftpClient1: FTPClient
     private lateinit var ftpClient2: FTPClient
     private val directoryPath: String = "/storage/emulated/0/Android/data/oNbeat/"
@@ -68,8 +72,10 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
         ftpClient1 = FTPClient()
         ftpClient2 = FTPClient()
 
+        println("GalleryFragment")
         // Observer for List that contains files to be downloaded - ESP1&2
-        val esp1Observer = Observer<MutableList<String>> { imagesToDownload ->
+        val esp1Observer = Observer<MutableList<String>?> { imagesToDownload ->
+            println("fired")
             if (imagesToDownload.isNotEmpty()){
                 println("Incoming Picture")
                 if (!ftpClient1.isConnected) {
@@ -80,7 +86,7 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
             }
         }
 
-        val esp2Observer = Observer<MutableList<String>> { imagesToDownload ->
+        val esp2Observer = Observer<MutableList<String>?> { imagesToDownload ->
             if (imagesToDownload.isNotEmpty()){
                 println("Incoming Picture")
                 if (!ftpClient2.isConnected) {
@@ -169,8 +175,8 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
         }
 
         // Register observers for the list that contains the images to be downloaded
-        ftpViewModel.picDownloadOne.observe(this, esp1Observer)
-        ftpViewModel.picDownloadTwo.observe(this, esp2Observer)
+        ftpViewModel.picDownloadOne.observe(viewLifecycleOwner, esp1Observer)
+        ftpViewModel.picDownloadTwo.observe(viewLifecycleOwner, esp2Observer)
     }
 
     //---------------------------------------------------------------------------------------------------
