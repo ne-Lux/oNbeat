@@ -21,7 +21,6 @@
         tools:ignore="GoogleAppIndexingWarning">
         <activity
             android:name="com.android.samples.oNbeat.MainActivity"
-            android:label="@string/app_name"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

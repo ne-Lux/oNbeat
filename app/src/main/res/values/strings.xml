@@ -19,6 +19,7 @@
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
+    <string name="directory_path">/storage/emulated/0/DCIM/oNbeat/</string>
 
     <string name="permission_not_granted">oNbeat requires access to storage and network to work properly.</string>
 

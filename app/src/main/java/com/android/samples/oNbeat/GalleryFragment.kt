@@ -52,7 +52,8 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
     private lateinit var odf:  ObjectDetectionFragment
     private val reqPermissionsStorage = arrayOf(
         Manifest.permission.READ_EXTERNAL_STORAGE,
-        Manifest.permission.WRITE_EXTERNAL_STORAGE
+        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        Manifest.permission.MANAGE_EXTERNAL_STORAGE
     )
     private val reqPermissionsNetwork = arrayOf(
         Manifest.permission.INTERNET,
@@ -77,18 +78,17 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
             println("fired")
             if (imagesToDownload.isNotEmpty()){
                 println("Incoming Picture")
-                ftpClient = FTPClient(ftpViewModel.hostOne.value, ftpViewModel.ftpPort.value, ftpViewModel.userName.value, ftpViewModel.pW.value, imagesToDownload)
+                ftpClient = FTPClient(true, imagesToDownload)
                 ftpThread = Thread(ftpClient)
                 ftpThread!!.start()
                 println("Download completed!")
-                //Todo("Remove imagestoDownload from ViewModel Variable")
             }
         }
 
         val esp2Observer = Observer<MutableList<String>?> { imagesToDownload ->
             if (imagesToDownload.isNotEmpty()){
                 println("Incoming Picture")
-                ftpClient = FTPClient(ftpViewModel.hostTwo.value, ftpViewModel.ftpPort.value, ftpViewModel.userName.value, ftpViewModel.pW.value, imagesToDownload)
+                ftpClient = FTPClient(false, imagesToDownload)
                 ftpThread = Thread(ftpClient)
                 ftpThread!!.start()
                 println("Downloading....")

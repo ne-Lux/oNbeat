@@ -1,5 +1,8 @@
 package com.android.samples.oNbeat
 
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import com.android.samples.oNbeat.viewmodels.FTPClientViewModel
 import org.apache.commons.net.ftp.FTP
 import org.apache.commons.net.ftp.FTPClient
 import org.apache.commons.net.ftp.FTPReply
@@ -11,13 +14,14 @@ import java.net.InetAddress
 import java.net.SocketException
 import java.nio.file.Files
 import kotlin.io.path.Path
-import kotlin.io.path.outputStream
 
 
-class FTPClient(private val host: String, private val port: Int, private val user: String, private val pw: String, private val downloadList: List<String>): Runnable {
+class FTPClient(private val firstESP32: Boolean, private val downloadList: List<String>): Runnable, Fragment() {
 
     private var ftpClient = FTPClient()
-    private val directoryPath: String = "/storage/emulated/0/Android/data/oNbeat/"
+    private val directoryPath: String = "/storage/emulated/0/DCIM/oNbeat/"
+    private val ftpViewModel: FTPClientViewModel by activityViewModels()
+    private var host: String = ""
     var isConnected = false
         private set
 
@@ -26,20 +30,30 @@ class FTPClient(private val host: String, private val port: Int, private val use
     }
     override fun run() {
         println("run")
-        connect(host, port)
-        login(user, pw)
+        host = if (firstESP32) {
+            ftpViewModel.hostOne.value
+        } else {
+            ftpViewModel.hostTwo.value
+        }
+        connect(host, ftpViewModel.ftpPort.value)
+        login(ftpViewModel.userName.value, ftpViewModel.pW.value)
         println("logged in")
         for (file in downloadList) {
-            val destFilePath = "$directoryPath$file.jpg"
+            val fileName = "picture_$file.jpg"
+            val destFilePath = directoryPath + fileName
             if (!Files.exists(Path(directoryPath))) Files.createDirectory(Path(directoryPath))
             val newFile = File(destFilePath)
             newFile.createNewFile()
             val oFile = FileOutputStream(newFile, false)
 
-            downloadFile("$file.jpg", oFile )
-
+            val success = downloadFile(fileName, oFile )
             oFile.close()
-
+            if (success) {
+                ftpViewModel.downloadCompleted(file, firstESP32)
+                deleteFile(fileName)
+            } else {
+                newFile.delete()
+            }
         }
         logout()
         disconnect()
@@ -71,6 +85,49 @@ class FTPClient(private val host: String, private val port: Int, private val use
         }
     }
 
+    private fun downloadFile(fileName: String, outputStream: OutputStream): Boolean {
+        return try {
+            println(fileName)
+            val downloaded = ftpClient.retrieveFile(fileName, outputStream)
+            println("File downloaded: $downloaded")
+            downloaded
+        } catch (ex: IOException) {
+            ex.printStackTrace()
+            false
+        } catch (ex: SocketException) {
+            ex.printStackTrace()
+            false
+        }
+    }
+
+    private fun deleteFile(fileName: String) {
+        try {
+            val success = ftpClient.deleteFile(fileName)
+            println("File exists and deleted: $success")
+        } catch (ex: IOException) {
+            ex.printStackTrace()
+        } catch (ex: SocketException) {
+            ex.printStackTrace()
+        }
+    }
+
+    private fun logout() {
+        try {
+            ftpClient.logout()
+        } catch (ex: IOException) {
+            ex.printStackTrace()
+        }
+    }
+
+    private fun disconnect() {
+        try {
+            ftpClient.disconnect()
+            isConnected = false
+        } catch (ex: IOException) {
+            ex.printStackTrace()
+        }
+    }
+
     /*fun getFiles(path: String = ""): Array<FTPFile> {
         var files = emptyArray<FTPFile>()
         try {
@@ -85,18 +142,6 @@ class FTPClient(private val host: String, private val port: Int, private val use
         return files
     }*/
 
-    /*fun getDirectories(path: String = ""): Array<FTPFile> {
-        var files = emptyArray<FTPFile>()
-        try {
-            files = ftpClient.listDirectories(path)
-        } catch (ex: IOException) {
-            ex.printStackTrace()
-        } catch (ex: SocketException) {
-            ex.printStackTrace()
-        }
-        return files
-    }*/
-
     /*fun getFileNames(path: String = "") : Array<String> {
         var files = emptyArray<String>()
         try {
@@ -106,103 +151,4 @@ class FTPClient(private val host: String, private val port: Int, private val use
         }
         return files
     }*/
-
-    private fun logout() {
-        try {
-            ftpClient.logout()
-        } catch (ex: IOException) {
-            ex.printStackTrace()
-        }
-    }
-
-    /*fun changeDir(path: String, goToParent: Boolean = false) {
-        try {
-            if (goToParent) {
-                ftpClient.changeToParentDirectory()
-            } else {
-                ftpClient.changeWorkingDirectory(path)
-            }
-        } catch (ex: IOException) {
-            ex.printStackTrace()
-        } catch (ex: SocketException) {
-            ex.printStackTrace()
-        }
-    }*/
-
-    fun getCurrentPath(): String {
-        var result = ""
-        try {
-            result = ftpClient.printWorkingDirectory()
-        } catch (ex: IOException) {
-            ex.printStackTrace()
-        } catch (ex: SocketException) {
-            ex.printStackTrace()
-        }
-        return result
-    }
-
-    fun deleteFile(fileName: String) {
-        try {
-            val exists = ftpClient.deleteFile(fileName)
-            println("File exists and deleted $exists")
-        } catch (ex: IOException) {
-            ex.printStackTrace()
-        } catch (ex: SocketException) {
-            ex.printStackTrace()
-        }
-    }
-
-    /*fun createDir(dirName: String) {
-        try {
-            val created = ftpClient.makeDirectory(dirName)
-            println("Dir created ${created}")
-        } catch (ex: IOException) {
-            ex.printStackTrace()
-        } catch (ex: SocketException) {
-            ex.printStackTrace()
-        }
-    }*/
-
-    /*fun removeDir(dirName: String) {
-        try {
-            val removed = ftpClient.removeDirectory(dirName)
-            println("Dir removed ${removed}")
-        } catch (ex: IOException) {
-            ex.printStackTrace()
-        } catch (ex: SocketException) {
-            ex.printStackTrace()
-        }
-    }*/
-
-    private fun downloadFile(file: String, outputStream: OutputStream) {
-        try {
-            val fileName = file + ".jpg"
-            val downloaded = ftpClient.retrieveFile(fileName, outputStream)
-            println("File downloaded $downloaded")
-        } catch (ex: IOException) {
-            ex.printStackTrace()
-        } catch (ex: SocketException) {
-            ex.printStackTrace()
-        }
-    }
-
-    /*fun uploadFile(fileName: String, inputStream: InputStream) {
-        try {
-            val uploaded = ftpClient.appendFile(fileName, inputStream)
-            println("File uploaded $uploaded")
-        } catch (ex: IOException) {
-            ex.printStackTrace()
-        } catch (ex: SocketException) {
-            ex.printStackTrace()
-        }
-    }*/
-
-    private fun disconnect() {
-        try {
-            ftpClient.disconnect()
-            isConnected = false
-        } catch (ex: IOException) {
-            ex.printStackTrace()
-        }
-    }
 }

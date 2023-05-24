@@ -74,6 +74,7 @@ class ServerSocketActivity : AppCompatActivity() {
             while (!Thread.currentThread().isInterrupted) {
                 try {
                     val read = input.readLine()
+                    println(read)
                     viewModel.addPic2Download(ipAddress, read)
                 } catch (e: IOException) {
                     e.printStackTrace()
