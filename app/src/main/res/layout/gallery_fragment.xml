@@ -44,7 +44,7 @@
                         <ImageView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:src="@drawable/photic_blanc"
+                            android:src="@drawable/onbeat_blanc"
                             android:layout_gravity="center_vertical"
                             android:layout_marginEnd="10dp"/>
                         <LinearLayout

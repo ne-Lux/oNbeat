@@ -1,10 +1,14 @@
 package com.android.samples.oNbeat
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.PorterDuff
+import android.net.wifi.WifiManager
+import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,6 +16,7 @@ import android.view.animation.AlphaAnimation
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -25,6 +30,7 @@ import com.android.samples.oNbeat.viewmodels.FTPClientViewModel
 import com.android.samples.oNbeat.viewmodels.GalleryFragmentViewModel
 import com.bumptech.glide.Glide
 import org.tensorflow.lite.task.vision.detector.Detection
+import java.lang.reflect.Method
 import java.text.SimpleDateFormat
 import java.util.concurrent.Executor
 
@@ -47,16 +53,6 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
     private val buttonClick = AlphaAnimation(0f, 1f)
     private val timeAdjustFragment = TimeAdjustFragment()
     private lateinit var odf:  ObjectDetectionFragment
-    private val reqPermissionsStorage = arrayOf(
-        Manifest.permission.READ_EXTERNAL_STORAGE,
-        Manifest.permission.WRITE_EXTERNAL_STORAGE,
-        Manifest.permission.MANAGE_EXTERNAL_STORAGE
-    )
-    private val reqPermissionsNetwork = arrayOf(
-        Manifest.permission.INTERNET,
-        Manifest.permission.ACCESS_NETWORK_STATE,
-        Manifest.permission.ACCESS_WIFI_STATE
-    )
 
     //Initiate the binding
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -73,9 +69,15 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
         // Observer for List that contains files to be downloaded - ESP1&2
         val esp1Observer = Observer<MutableList<String>?> { imagesToDownload ->
             println("fired")
-            if (imagesToDownload.isNotEmpty()){
+            if (imagesToDownload.isNotEmpty()) {
                 println("Incoming Picture")
-                ftpClient = FTPClient(ftpViewModel.hostOne.value, ftpViewModel.ftpPort.value, ftpViewModel.userName.value, ftpViewModel.pW.value, imagesToDownload)
+                ftpClient = FTPClient(
+                    ftpViewModel.hostOne.value,
+                    ftpViewModel.ftpPort.value,
+                    ftpViewModel.userName.value,
+                    ftpViewModel.pW.value,
+                    imagesToDownload
+                )
                 ftpThread = Thread(ftpClient)
                 ftpThread!!.start()
                 println("Download completed!")
@@ -83,9 +85,15 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
         }
 
         val esp2Observer = Observer<MutableList<String>?> { imagesToDownload ->
-            if (imagesToDownload.isNotEmpty()){
+            if (imagesToDownload.isNotEmpty()) {
                 println("Incoming Picture")
-                ftpClient = FTPClient(ftpViewModel.hostTwo.value, ftpViewModel.ftpPort.value, ftpViewModel.userName.value, ftpViewModel.pW.value, imagesToDownload)
+                ftpClient = FTPClient(
+                    ftpViewModel.hostTwo.value,
+                    ftpViewModel.ftpPort.value,
+                    ftpViewModel.userName.value,
+                    ftpViewModel.pW.value,
+                    imagesToDownload
+                )
                 ftpThread = Thread(ftpClient)
                 ftpThread!!.start()
                 println("Downloading....")
@@ -106,7 +114,7 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
         //Bind the GalleryAdapter to the RecyclerView-Grid
         binding.gallery.also { viewX ->
             viewX.layoutManager = GridLayoutManager(requireContext(), 1)
-             viewX.adapter = galleryAdapter
+            viewX.adapter = galleryAdapter
         }
 
         //Restore the number of already selected images icon and the clear button, if there are already selected images
@@ -122,10 +130,9 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
         initCalendarImage()
 
         //Display the Floating Action Button, if all constraints are already fulfilled
-        if(viewModel.startDate.value!="" && viewModel.stopDate.value!= "" && viewModel.selectedImages.value.count() > 0){
+        if (viewModel.startDate.value != "" && viewModel.stopDate.value != "" && viewModel.selectedImages.value.count() > 0) {
             binding.fab.show()
-        }
-        else{
+        } else {
             binding.fab.hide()
         }
 
@@ -142,7 +149,8 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
             initCalendarImage()
             //Call swapDates to swap start- and stopdate, if stopdate is earlier than startdate
             //Write the date to the specified label
-            if (viewModel.startTag.value) binding.startDate.text = justdate else binding.stopDate.text= justdate
+            if (viewModel.startTag.value) binding.startDate.text =
+                justdate else binding.stopDate.text = justdate
             //Store the date inside the ViewModel
             viewModel.setDate(viewModel.startTag.value, datetime, justdate)
             //Check if constraints to display the fab are already fulfilled
@@ -150,55 +158,25 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
         }
 
         //FragmentResultListener for the DateTimePickerFragment. This Code is executed once the view is canceled.
-        setFragmentResultListener("destroyedDPD") {_, _ ->
+        setFragmentResultListener("destroyedDPD") { _, _ ->
             //Restore ic_start/stop_calendar (not clicked)
             initCalendarImage()
         }
         //FragmentResultListener for the DateDialogFragment. This Code is executed once the view is canceled.
-        setFragmentResultListener("destroyedDD") {_, _ ->
+        setFragmentResultListener("destroyedDD") { _, _ ->
             //Restore ic_start/stop_calendar (not clicked)
             initCalendarImage()
         }
 
         // -----------------------------------------------------------------------------------------------
-
-        if (!haveNetworkPermission()) {
-            permReqLauncher.launch(reqPermissionsNetwork)
-        }
-        if (!haveStoragePermission()) {
-            permReqLauncher.launch(reqPermissionsStorage)
-        }
-
         // Register observers for the list that contains the images to be downloaded
         ftpViewModel.picDownloadOne.observe(viewLifecycleOwner, esp1Observer)
         ftpViewModel.picDownloadTwo.observe(viewLifecycleOwner, esp2Observer)
     }
 
     // -------------------------------------------------------------------------------------------------
-    // FTP Client functions
+    // Check Hotspot
     // -------------------------------------------------------------------------------------------------
-
-    // Connect to FTP Server and perform login
-    /*
-    private fun connectFTPServer(firstESP32: Boolean) {
-        println("connectFTPServer")
-        if (firstESP32){
-                ftpClient1.connect(ftpViewModel.hostOne.value, ftpViewModel.ftpPort.value)
-                ftpClient1.login(ftpViewModel.userName.value, ftpViewModel.pW.value)
-        } else {
-            Thread {
-                ftpClient2.connect(ftpViewModel.hostTwo.value, ftpViewModel.ftpPort.value)
-                ftpClient2.login(ftpViewModel.userName.value, ftpViewModel.pW.value)
-            }.start()
-        }
-    }
-
-    // Download specified files from FTP Server
-    private fun downloadFiles(imagesToDownload: MutableList<String>, firstESP32: Boolean){
-        for (image in imagesToDownload){
-        }
-    }
-     */
 
     //----------------------------------------------------------------------------------------------------
     //Clickhandler
@@ -410,35 +388,6 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
             }
         }
     }
-
-    //----------------------------------------------------------------------------------------------------
-    //Permission handling
-
-    //Simple permission check
-    private fun haveStoragePermission():Boolean {
-        return ((ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
-                && (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED))
-        //The result of externalStorageManager is not checked immediately. It is checked every time an image is about to be changed.
-    }
-    private fun haveNetworkPermission():Boolean {
-        return ((ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.INTERNET) == PackageManager.PERMISSION_GRANTED)
-                && (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_NETWORK_STATE) == PackageManager.PERMISSION_GRANTED)
-                && (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_WIFI_STATE) == PackageManager.PERMISSION_GRANTED))
-        //The result of externalStorageManager is not checked immediately. It is checked every time an image is about to be changed.
-    }
-
-    //Permission Request Launcher
-    private val permReqLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
-            val permissionReqRes = permissions.entries.all {
-                it.value
-            }
-            //Check if the needed permissions are granted
-            if (!permissionReqRes) {
-                //If the permissions are not granted, show a Toast.
-                Toast.makeText(requireContext(),R.string.permission_not_granted, Toast.LENGTH_LONG).show()
-            }
-        }
 
     //Show the view to grant the External Storage Manager Permission
     // ############################ TF PART

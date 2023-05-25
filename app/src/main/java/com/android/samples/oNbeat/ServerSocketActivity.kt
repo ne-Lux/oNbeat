@@ -1,8 +1,16 @@
 package com.android.samples.oNbeat
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
+import android.net.wifi.WifiManager
+import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.android.samples.oNbeat.viewmodels.FTPClientViewModel
@@ -23,11 +31,16 @@ class ServerSocketActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         println("ServerSocketActivity")
         startServerThread()
+        viewModel.setHotSpot(checkHotspot())
     }
-
     private fun startServerThread () {
         serverThread = Thread(ServerRunnable())
         serverThread!!.start()
+    }
+
+    private fun checkHotspot(): Boolean {
+        val wifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+        return wifiManager.isWifiPasspointEnabled
     }
 
     internal inner class ServerRunnable : Runnable {
@@ -42,6 +55,8 @@ class ServerSocketActivity : AppCompatActivity() {
             }
             while (!Thread.currentThread().isInterrupted) {
                 try {
+                    viewModel.setHotSpot(checkHotspot())
+
                     val socket = serverSocket!!.accept()
                     val commThread = CommunicationThread(socket)
                     Thread(commThread).start()

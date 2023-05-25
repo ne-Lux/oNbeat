@@ -5,7 +5,7 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 
 android {
-    compileSdkVersion 31
+    compileSdkVersion 33
     buildTypes {
         release {
             minifyEnabled false
@@ -14,8 +14,8 @@ android {
     }
     defaultConfig {
         applicationId "com.android.samples.oNbeat"
-        minSdkVersion 30
-        targetSdkVersion 31
+        minSdkVersion 33
+        targetSdkVersion 33
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
