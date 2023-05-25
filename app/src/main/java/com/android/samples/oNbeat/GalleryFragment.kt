@@ -25,11 +25,8 @@ import com.android.samples.oNbeat.viewmodels.FTPClientViewModel
 import com.android.samples.oNbeat.viewmodels.GalleryFragmentViewModel
 import com.bumptech.glide.Glide
 import org.tensorflow.lite.task.vision.detector.Detection
-import java.nio.file.Files
 import java.text.SimpleDateFormat
 import java.util.concurrent.Executor
-import kotlin.io.path.Path
-import kotlin.io.path.outputStream
 
 
 /*
@@ -48,7 +45,7 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
 
     private lateinit var binding: GalleryFragmentBinding
     private val buttonClick = AlphaAnimation(0f, 1f)
-    private val datedialogFragment = DateDialogFragment()
+    private val timeAdjustFragment = TimeAdjustFragment()
     private lateinit var odf:  ObjectDetectionFragment
     private val reqPermissionsStorage = arrayOf(
         Manifest.permission.READ_EXTERNAL_STORAGE,

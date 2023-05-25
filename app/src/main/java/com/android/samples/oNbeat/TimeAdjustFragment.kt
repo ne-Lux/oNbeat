@@ -18,10 +18,9 @@ import com.android.samples.oNbeat.viewmodels.GalleryFragmentViewModel
 /*
 DialogFragment to choose the date selection mode
  */
-class DateDialogFragment: DialogFragment(R.layout.datedialog_fragment) {
+class TimeAdjustFragment: DialogFragment(R.layout.datedialog_fragment) {
     //Initiate ViewModel, binding and other variables
     private val viewModel: GalleryFragmentViewModel by activityViewModels()
-    private val dateTimePicker = DateTimePickerFragment()
     private lateinit var binding: DatedialogFragmentBinding
 
     //Initiate the binding
@@ -57,7 +56,6 @@ class DateDialogFragment: DialogFragment(R.layout.datedialog_fragment) {
     //ClickHandler for calendarbutton
     private fun onCalendarClick(){
         //Show the DateTimePickerDialog
-        dateTimePicker.show(parentFragmentManager,"DateTimePicker_tag")
         //close this dialog
         dismiss()
     }
