@@ -1,24 +1,21 @@
 package com.android.samples.oNbeat
 
-import android.Manifest
+import android.content.BroadcastReceiver
 import android.content.Context
-import android.content.pm.PackageManager
+import android.content.Intent
+import android.content.IntentFilter
 import android.net.wifi.WifiManager
-import android.os.Build
 import android.os.Bundle
-import android.os.Handler
 import androidx.activity.viewModels
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import com.android.samples.oNbeat.viewmodels.FTPClientViewModel
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
+import java.lang.reflect.Method
 import java.net.ServerSocket
 import java.net.Socket
+
 
 class ServerSocketActivity : AppCompatActivity() {
     private var serverThread: Thread? = null
@@ -31,16 +28,38 @@ class ServerSocketActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         println("ServerSocketActivity")
         startServerThread()
-        viewModel.setHotSpot(checkHotspot())
+
+        checkHotspot()
+        val receiverFilter = IntentFilter("android.net.wifi.WIFI_AP_STATE_CHANGED")
+        registerReceiver(hotspotReceiver, receiverFilter)
+
     }
+
     private fun startServerThread () {
         serverThread = Thread(ServerRunnable())
         serverThread!!.start()
     }
 
-    private fun checkHotspot(): Boolean {
-        val wifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
-        return wifiManager.isWifiPasspointEnabled
+    private val hotspotReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val action = intent.action
+            if ("android.net.wifi.WIFI_AP_STATE_CHANGED" == action) {
+                val state = intent.getIntExtra(WifiManager.EXTRA_WIFI_STATE, 0)
+                if (WifiManager.WIFI_STATE_ENABLED == state % 10) {
+                    viewModel.setHotSpot(true)
+                } else {
+                    viewModel.setHotSpot(false)
+                }
+            }
+        }
+    }
+    private fun checkHotspot() {
+        val state = intent.getIntExtra(WifiManager.EXTRA_WIFI_STATE, 0)
+        if (WifiManager.WIFI_STATE_ENABLED == state % 10) {
+            viewModel.setHotSpot(true)
+        } else {
+            viewModel.setHotSpot(false)
+        }
     }
 
     internal inner class ServerRunnable : Runnable {
@@ -55,7 +74,7 @@ class ServerSocketActivity : AppCompatActivity() {
             }
             while (!Thread.currentThread().isInterrupted) {
                 try {
-                    viewModel.setHotSpot(checkHotspot())
+                    //viewModel.setHotSpot(checkHotspot())
 
                     val socket = serverSocket!!.accept()
                     val commThread = CommunicationThread(socket)
