@@ -1,23 +1,14 @@
 package com.android.samples.oNbeat
 
-import android.Manifest
-import android.content.Context
-import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.PorterDuff
-import android.net.wifi.WifiManager
-import android.os.Build
 import android.os.Bundle
-import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AlphaAnimation
 import android.widget.ImageView
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.setFragmentResultListener
@@ -30,7 +21,6 @@ import com.android.samples.oNbeat.viewmodels.FTPClientViewModel
 import com.android.samples.oNbeat.viewmodels.GalleryFragmentViewModel
 import com.bumptech.glide.Glide
 import org.tensorflow.lite.task.vision.detector.Detection
-import java.lang.reflect.Method
 import java.text.SimpleDateFormat
 import java.util.concurrent.Executor
 
@@ -65,8 +55,9 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
         super.onViewCreated(view, savedInstanceState)
         odf = ObjectDetectionFragment(context = requireContext(), objectDetectorListener = this)
 
-        println("GalleryFragment")
-        // Observer for List that contains files to be downloaded - ESP1&2
+        // -----------------------------------------------------------------------------------------
+        // Observers
+        // -----------------------------------------------------------------------------------------
         val esp1Observer = Observer<MutableList<String>?> { imagesToDownload ->
             println("fired")
             if (imagesToDownload.isNotEmpty()) {
@@ -100,6 +91,25 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
             }
         }
 
+        val hotspotObserver = Observer<Boolean> { hotspotActive ->
+            if (hotspotActive) {
+                binding.icHotspot.setImageResource(R.drawable.ic_hotspot)
+            } else {
+                binding.icHotspot.setImageResource(R.drawable.ic_hotspot_off)
+            }
+        }
+
+        val devicesObserver = Observer<Int> { devicesConnected ->
+            binding.devicesConnected.text = devicesConnected.toString()
+        }
+
+        // -----------------------------------------------------------------------------------------------
+        // Register observers for the list that contains the images to be downloaded
+        ftpViewModel.picDownloadOne.observe(viewLifecycleOwner, esp1Observer)
+        ftpViewModel.picDownloadTwo.observe(viewLifecycleOwner, esp2Observer)
+        ftpViewModel.hotspot.observe(viewLifecycleOwner, hotspotObserver)
+        ftpViewModel.connectedDevices.observe(viewLifecycleOwner, devicesObserver)
+
         // ToDo: Ist an dieser Stelle nur zum ausprobieren
         //odf.detectObjects("Teststring")
 
@@ -107,33 +117,11 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
         val galleryAdapter = GalleryAdapter { image, posi ->
             onImageClick(image, posi)
         }
-        //Set onClickListener for all buttons
-        binding.clearSelection.setOnClickListener { onClearClick() }
-        binding.fab.setOnClickListener { applyChanges() }
 
         //Bind the GalleryAdapter to the RecyclerView-Grid
         binding.gallery.also { viewX ->
             viewX.layoutManager = GridLayoutManager(requireContext(), 1)
             viewX.adapter = galleryAdapter
-        }
-
-        //Restore the number of already selected images icon and the clear button, if there are already selected images
-        if (viewModel.numberImages.value != 0) {
-            binding.imageNumber.visibility = View.VISIBLE
-            binding.clearSelection.visibility = View.VISIBLE
-            binding.imageNumber.text = viewModel.numberImages.value.toString()
-        }
-
-        //Display start-and stopdate, if already selected
-        binding.startDate.text = viewModel.startDate.value
-        binding.stopDate.text = viewModel.stopDate.value
-        initCalendarImage()
-
-        //Display the Floating Action Button, if all constraints are already fulfilled
-        if (viewModel.startDate.value != "" && viewModel.stopDate.value != "" && viewModel.selectedImages.value.count() > 0) {
-            binding.fab.show()
-        } else {
-            binding.fab.hide()
         }
 
         //FragmentResultListener for the DateTimePickerFragment. This Code is executed, once a date is selected
@@ -146,32 +134,18 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
             //No date selection mode any more
             viewModel.setdateSelect(tag = false)
             //Restore ic_start/stop_calendar (not clicked)
-            initCalendarImage()
-            //Call swapDates to swap start- and stopdate, if stopdate is earlier than startdate
-            //Write the date to the specified label
-            if (viewModel.startTag.value) binding.startDate.text =
-                justdate else binding.stopDate.text = justdate
-            //Store the date inside the ViewModel
-            viewModel.setDate(viewModel.startTag.value, datetime, justdate)
-            //Check if constraints to display the fab are already fulfilled
-            checkConstraints()
         }
 
         //FragmentResultListener for the DateTimePickerFragment. This Code is executed once the view is canceled.
         setFragmentResultListener("destroyedDPD") { _, _ ->
             //Restore ic_start/stop_calendar (not clicked)
-            initCalendarImage()
         }
         //FragmentResultListener for the DateDialogFragment. This Code is executed once the view is canceled.
         setFragmentResultListener("destroyedDD") { _, _ ->
             //Restore ic_start/stop_calendar (not clicked)
-            initCalendarImage()
         }
 
-        // -----------------------------------------------------------------------------------------------
-        // Register observers for the list that contains the images to be downloaded
-        ftpViewModel.picDownloadOne.observe(viewLifecycleOwner, esp1Observer)
-        ftpViewModel.picDownloadTwo.observe(viewLifecycleOwner, esp2Observer)
+
     }
 
     // -------------------------------------------------------------------------------------------------
@@ -234,9 +208,7 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
         //Clear the image storage variables inside the ViewModel
         viewModel.deSelectImages()
         //Update the number of selected images
-        displayImagenum()
         //Check if constraints to display the fab are already fulfilled
-        checkConstraints()
     }
 
     private fun applyChanges(){
@@ -245,27 +217,6 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
 
     //----------------------------------------------------------------------------------------------------
     //Reusable funs
-
-    //Display/Hide the number of selected images as well as the clear selection button
-    private fun displayImagenum() {
-        val imageNumber= binding.imageNumber
-        val intImagesSelected = viewModel.selectedImages.value.size
-        val clearSelection = binding.clearSelection
-
-        //Write the number of selected images to the label
-        imageNumber.text = intImagesSelected.toString()
-        //If there is an image selected
-        if (intImagesSelected > 0) {
-            //Display the number of selected images as well as the clear selection button
-            imageNumber.visibility = View.VISIBLE
-            clearSelection.visibility = View.VISIBLE
-        }
-        else {
-            //Hide the number of selected images as well as the clear selection button
-            imageNumber.visibility = View.INVISIBLE
-            clearSelection.visibility = View.INVISIBLE
-        }
-    }
 
     //Set background and colorfilter depending on selection status
     private fun handleSelection(select: Boolean, position: Int = -1){ //attribute select is not needed yet. It is introduced to be used for a range selection
@@ -319,31 +270,6 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
 
             }
         }
-    }
-
-    //Fun to check, if all constraints to display the Floating Action Button are fulfilled:
-    //StartDate is set, StopDate is set, at least one image is selected
-    private fun checkConstraints(){
-        if(viewModel.startDate.value!= "" && viewModel.stopDate.value!= "" && viewModel.selectedImages.value.count() > 0)
-            binding.fab.show()
-        else
-            binding.fab.hide()
-    }
-
-    //Fun to display the ic_start/stop_calendar image, based on the date selection mode
-    private fun initCalendarImage(){
-        //For startdate
-        if (viewModel.startTag.value)
-            //If dateselection mode is active, show ic_start_calendar_clicked
-            if (viewModel.dateSelect.value) binding.StartCalendar.setImageResource(R.drawable.ic_start_calendar_clicked)
-            //else show ic_start_calendar
-            else binding.StartCalendar.setImageResource(R.drawable.ic_start_calendar)
-        //For stopdate
-        else
-            //If dateselection mode is active, show ic_stop_calendar_clicked
-            if (viewModel.dateSelect.value) binding.StopCalendar.setImageResource(R.drawable.ic_stop_calendar_clicked)
-            //else show ic_stop_calendar
-            else binding.StopCalendar.setImageResource(R.drawable.ic_stop_calendar)
     }
 
 

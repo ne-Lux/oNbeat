@@ -23,7 +23,8 @@
 
     <string name="permission_not_granted">oNbeat requires access to storage and network to work properly.</string>
 
-    <string name="datehint">01.01.70</string>
+    <string name="connected">0</string>
+    <string name="hotspot">ic_hotspot</string>
     <string name="fab_apply">Apply</string>
     <string name="fab">Floating Action Button</string>
 </resources>

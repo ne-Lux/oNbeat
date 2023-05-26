@@ -12,7 +12,6 @@ import com.android.samples.oNbeat.viewmodels.FTPClientViewModel
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
-import java.lang.reflect.Method
 import java.net.ServerSocket
 import java.net.Socket
 
@@ -74,12 +73,10 @@ class ServerSocketActivity : AppCompatActivity() {
             }
             while (!Thread.currentThread().isInterrupted) {
                 try {
-                    //viewModel.setHotSpot(checkHotspot())
-
+                    viewModel.addDevice()
                     val socket = serverSocket!!.accept()
                     val commThread = CommunicationThread(socket)
                     Thread(commThread).start()
-                    // Thread { ClientHandler(socket).run() }
                     val socketIP = socket.inetAddress.hostAddress
                     println("Client connected: $socketIP")
                     viewModel.setIP(socketIP)
@@ -93,7 +90,7 @@ class ServerSocketActivity : AppCompatActivity() {
 
     internal inner class CommunicationThread(clientSocket: Socket): Runnable {
         private var input: BufferedReader
-        private var ipAddress: String = clientSocket.inetAddress.hostAddress
+        private var ipAddress: String = clientSocket.inetAddress.hostAddress as String
 
         init {
             try {
