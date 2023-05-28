@@ -2,6 +2,7 @@ package com.android.samples.oNbeat
 
 import android.graphics.Color
 import android.graphics.PorterDuff
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -21,6 +22,7 @@ import com.android.samples.oNbeat.viewmodels.FTPClientViewModel
 import com.android.samples.oNbeat.viewmodels.GalleryFragmentViewModel
 import com.bumptech.glide.Glide
 import org.tensorflow.lite.task.vision.detector.Detection
+import java.io.InputStream
 import java.text.SimpleDateFormat
 import java.util.concurrent.Executor
 
@@ -149,8 +151,34 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
     }
 
     // -------------------------------------------------------------------------------------------------
-    // Check Hotspot
+    // Data to/from .csv
     // -------------------------------------------------------------------------------------------------
+
+    fun readCsv(inputStream: InputStream): List<RaceResult> {
+        //Todo("Pass directorypath to FTPClient. Redundant data atm."
+        val directoryPath: String = "/storage/emulated/0/DCIM/oNbeat/SampleData/"
+        val reader = inputStream.bufferedReader()
+        val header = reader.readLine()
+        return reader.lineSequence()
+            .filter { it.isNotBlank() }
+            .map {
+                val (raceNumber,
+                    startTime,
+                    startImage,
+                    finishTime,
+                    finishImage) = it.split(',', ignoreCase = true, limit = 5)
+                RaceResult(raceNumber.trim().toInt(),
+                    startTime.trim().toLong(),
+                    startImage.trim(),
+                    Uri.parse(directoryPath+startImage.trim()),
+                    finishTime.trim().toLong(),
+                    finishImage.trim(),
+                    Uri.parse(directoryPath+finishImage.trim()),
+                    finishTime.trim().toLong()-startTime.trim().toLong())
+            }.toList()
+        TODO("Write a fun to set the imagelist")
+        viewModel.setImageList
+    }
 
     //----------------------------------------------------------------------------------------------------
     //Clickhandler
