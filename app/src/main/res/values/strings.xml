@@ -23,6 +23,16 @@
 
     <string name="permission_not_granted">oNbeat requires access to storage and network to work properly.</string>
 
+    <string name="label_race_number">1991</string>
+    <string name="label_total">Total</string>
+    <string name="label_total_time">11111111</string>
+    <string name="label_start">Start</string>
+    <string name="label_start_time">12345678</string>
+    <string name="image_start">start image</string>
+    <string name="label_finish_time">23456789</string>
+    <string name="label_finish">Finish</string>
+    <string name="image_finish">finish image</string>
+
     <string name="connected">0</string>
     <string name="hotspot">ic_hotspot</string>
     <string name="open">ic_open</string>

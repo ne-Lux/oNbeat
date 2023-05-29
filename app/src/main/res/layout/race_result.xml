@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="1dp"
+    android:id="@+id/imageLayout"
+    android:clipToOutline="true">
+
+    <TextView
+        android:id="@+id/label_race_number"
+        android:layout_width="90dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="25dp"
+        android:textSize="36sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintVertical_bias="0"
+        android:text="@string/label_race_number"/>
+
+    <View
+        android:id="@+id/bar1"
+        android:layout_width="2dp"
+        android:layout_height="100dp"
+        android:layout_marginStart="1dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginEnd="1dp"
+        android:layout_marginBottom="2dp"
+        android:background="#2E2E2E"
+        app:layout_constraintStart_toEndOf="@id/label_race_number"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/label_total"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/label_total"
+        android:textAllCaps="true"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toEndOf="@+id/bar1"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/label_total_time"
+        android:layout_width="95dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/label_total_time"
+        android:textAllCaps="true"
+        android:textSize="20sp"
+        app:layout_constraintStart_toEndOf="@+id/bar1"
+        app:layout_constraintTop_toBottomOf="@id/label_total"/>
+
+    <View
+        android:id="@+id/bar2"
+        android:layout_width="2dp"
+        android:layout_height="100dp"
+        android:layout_marginStart="1dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginEnd="1dp"
+        android:layout_marginBottom="2dp"
+        android:background="#2E2E2E"
+        app:layout_constraintStart_toEndOf="@id/label_total_time"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/label_start"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="1dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="2dp"
+        android:text="@string/label_start"
+        android:textAllCaps="true"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toEndOf="@+id/bar2"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/label_start_time"
+        android:layout_width="95dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="1dp"
+        android:text="@string/label_start_time"
+        android:textAllCaps="true"
+        android:textSize="16sp"
+        app:layout_constraintStart_toEndOf="@+id/bar2"
+        app:layout_constraintTop_toBottomOf="@id/label_start"/>
+    <ImageView
+        android:id="@+id/image_start"
+        android:layout_width="64dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="2dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="2dp"
+        android:contentDescription="@string/image_start"
+        android:src="@drawable/sample_image_start"
+        app:layout_constraintStart_toEndOf="@+id/label_start_time"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <TextView
+        android:id="@+id/label_finish"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="1dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="2dp"
+        android:text="@string/label_finish"
+        android:textAllCaps="true"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toEndOf="@+id/bar2"
+        app:layout_constraintTop_toBottomOf="@id/label_start_time" />
+
+    <TextView
+        android:id="@+id/label_finish_time"
+        android:layout_width="95dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="1dp"
+        android:text="@string/label_finish_time"
+        android:textAllCaps="true"
+        android:textSize="16sp"
+        app:layout_constraintStart_toEndOf="@+id/bar2"
+        app:layout_constraintTop_toBottomOf="@id/label_finish"/>
+
+    <ImageView
+        android:id="@+id/image_finish"
+        android:layout_width="64dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="2dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="2dp"
+        android:contentDescription="@string/image_finish"
+        android:src="@drawable/sample_image_finish"
+        app:layout_constraintStart_toEndOf="@+id/label_finish_time"
+        app:layout_constraintTop_toBottomOf="@id/image_start"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
