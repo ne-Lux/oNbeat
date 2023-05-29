@@ -25,6 +25,8 @@
 
     <string name="connected">0</string>
     <string name="hotspot">ic_hotspot</string>
+    <string name="open">ic_open</string>
+    <string name="save">ic_save</string>
     <string name="fab_apply">Apply</string>
     <string name="fab">Floating Action Button</string>
 </resources>

@@ -22,7 +22,7 @@ import com.android.samples.oNbeat.viewmodels.FTPClientViewModel
 import com.android.samples.oNbeat.viewmodels.GalleryFragmentViewModel
 import com.bumptech.glide.Glide
 import org.tensorflow.lite.task.vision.detector.Detection
-import java.io.InputStream
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.concurrent.Executor
 
@@ -58,7 +58,7 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
         odf = ObjectDetectionFragment(context = requireContext(), objectDetectorListener = this)
 
         // -----------------------------------------------------------------------------------------
-        // Observers
+        // Observers Functions
         // -----------------------------------------------------------------------------------------
         val esp1Observer = Observer<MutableList<String>?> { imagesToDownload ->
             println("fired")
@@ -105,8 +105,9 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
             binding.devicesConnected.text = devicesConnected.toString()
         }
 
-        // -----------------------------------------------------------------------------------------------
-        // Register observers for the list that contains the images to be downloaded
+        // -----------------------------------------------------------------------------------------
+        // Observer Registration
+        // -----------------------------------------------------------------------------------------
         ftpViewModel.picDownloadOne.observe(viewLifecycleOwner, esp1Observer)
         ftpViewModel.picDownloadTwo.observe(viewLifecycleOwner, esp2Observer)
         ftpViewModel.hotspot.observe(viewLifecycleOwner, hotspotObserver)
@@ -115,7 +116,14 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
         // ToDo: Ist an dieser Stelle nur zum ausprobieren
         //odf.detectObjects("Teststring")
 
-        //Set onClickListener for images inside the gallery
+        // -----------------------------------------------------------------------------------------
+        // Onclick Listeners
+        // -----------------------------------------------------------------------------------------
+        binding.icOpen.setOnClickListener {onOpenClick()}
+        binding.icSave.setOnClickListener { onSaveClick() }
+        binding.icHotspot.setOnClickListener { onHotspotClick() }
+        binding.devicesConnected.setOnClickListener { onDevicesClick() }
+
         val galleryAdapter = GalleryAdapter { image, posi ->
             onImageClick(image, posi)
         }
@@ -150,14 +158,14 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
 
     }
 
-    // -------------------------------------------------------------------------------------------------
-    // Data to/from .csv
-    // -------------------------------------------------------------------------------------------------
+    // ---------------------------------------------------------------------------------------------
+    // Read/Write .csv data
+    // ---------------------------------------------------------------------------------------------
 
-    fun readCsv(inputStream: InputStream): List<RaceResult> {
+    fun readCsv(inputFile: File): List<RaceResult> {
         //Todo("Pass directorypath to FTPClient. Redundant data atm."
         val directoryPath: String = "/storage/emulated/0/DCIM/oNbeat/SampleData/"
-        val reader = inputStream.bufferedReader()
+        val reader = inputFile.bufferedReader()
         val header = reader.readLine()
         return reader.lineSequence()
             .filter { it.isNotBlank() }
@@ -176,12 +184,11 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
                     Uri.parse(directoryPath+finishImage.trim()),
                     finishTime.trim().toLong()-startTime.trim().toLong())
             }.toList()
-        TODO("Write a fun to set the imagelist")
-        viewModel.setImageList
     }
 
-    //----------------------------------------------------------------------------------------------------
-    //Clickhandler
+    // ---------------------------------------------------------------------------------------------
+    // Clickhandler
+    // ---------------------------------------------------------------------------------------------
 
     //ClickHandler for image
     private fun onImageClick(image: RaceResult, posi: Int) {
@@ -229,22 +236,33 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
          */
     }
 
-    //ClickHandler for clear button
-    private fun onClearClick() {
-        //Remove highlighting from all images
-        handleSelection(false)
-        //Clear the image storage variables inside the ViewModel
-        viewModel.deSelectImages()
-        //Update the number of selected images
-        //Check if constraints to display the fab are already fulfilled
+    private fun onOpenClick() {
+        val directoryPath: String = "/storage/emulated/0/DCIM/oNbeat/SampleData/"
+        {
+            TODO("Auswahl des Files über Dialog")
+        }
+        val importResults = readCsv( File(directoryPath+"ux47aW_20230528"))
+        viewModel.importResults(importResults)
     }
 
+    private fun onSaveClick(){
+        TODO()
+    }
+
+    private fun onHotspotClick(){
+        Toast.makeText(requireContext(),"Hotspot is activated: ${ftpViewModel.hotspot}",Toast.LENGTH_LONG).show()
+    }
+
+    private fun onDevicesClick(){
+        Toast.makeText(requireContext(),"Devices connected: ${ftpViewModel.connectedDevices}",Toast.LENGTH_LONG).show()
+    }
     private fun applyChanges(){
         //MediaScannerConnection.scanFile(requireContext(), arrayOf(fullPathNF), arrayOf("image/jpeg"),null)
     }
 
-    //----------------------------------------------------------------------------------------------------
-    //Reusable funs
+    // ---------------------------------------------------------------------------------------------
+    // Other functions
+    // ---------------------------------------------------------------------------------------------
 
     //Set background and colorfilter depending on selection status
     private fun handleSelection(select: Boolean, position: Int = -1){ //attribute select is not needed yet. It is introduced to be used for a range selection

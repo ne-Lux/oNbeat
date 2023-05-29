@@ -177,6 +177,9 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
         return image
     }*/
 
+    fun importResults (importedResults: List<RaceResult>) {
+        _images.value = importedResults
+    }
 
     fun registerRaceNumber (raceNumber: Int, imagePath: String, start: Boolean, time: Long){
         val uri = Uri.parse(imagePath)
