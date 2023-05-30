@@ -41,15 +41,11 @@ Shared ViewModel for GalleryFragment, that is also accessed by DateDialogFragmen
  */
 class GalleryFragmentViewModel(application: Application) : AndroidViewModel(application) {
     //Variables stored inside the ViewModel and the read-only companions that can be accessed by the Fragments
-    private val _images = MutableLiveData<List<RaceResult>>()
-    val images: LiveData<List<RaceResult>> get() = _images
-
-    private var _results = MutableStateFlow(mutableListOf<RaceResult>())
-    val results: StateFlow<List<RaceResult>> get() = _results
+    private val _results = MutableLiveData<MutableList<RaceResult>>()
+    val results: LiveData<MutableList<RaceResult>> get() = _results
 
     private var contentObserver: ContentObserver? = null
-    private var _selectedImages = MutableStateFlow<MutableList<RaceResult>>(ArrayList())
-    val selectedImages: StateFlow<List<RaceResult>> get() = _selectedImages
+
     private var _viewHolds = MutableStateFlow<MutableList<Int>>(ArrayList())
     val viewHolds: StateFlow<List<Int>> get() = _viewHolds
     private var _numberImages = MutableStateFlow(0)
@@ -72,27 +68,6 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
     //----------------------------------------------------------------------------------------------------
     //Interface funs for fragments to set variables
 
-    //fun to store/remove information about a selected/deselected image inside the ViewModel
-    fun selectImage(image: RaceResult, view: Int) {
-        //image is deselected
-        if(_selectedImages.value.contains(image)){
-            _selectedImages.value.remove(image)
-            _viewHolds.value.remove(Integer.valueOf(view))
-        }
-        //image is selected
-        else{
-            _selectedImages.value.add(image)
-            _viewHolds.value.add(view)
-        }
-        //update the number of selected images
-        _numberImages.value = _selectedImages.value.size
-    }
-
-    //fun to deselect all images (by clear button)
-    fun deSelectImages(){
-        _selectedImages.value.clear()
-        _viewHolds.value.clear()
-    }
 
     //fun to define, if start- or stopdate will be selected
     fun setTag(tag: Boolean){
@@ -178,19 +153,19 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
     }*/
 
     fun importResults (importedResults: List<RaceResult>) {
-        _images.value = importedResults
+        _results.value = importedResults.toMutableList()
     }
 
     fun registerRaceNumber (raceNumber: Int, imagePath: String, start: Boolean, time: Long){
         val uri = Uri.parse(imagePath)
         if (start) {
             val result = RaceResult(raceNumber = raceNumber, startTime = time, startImage = imagePath, contentUriStart = uri)
-            _results.value.add(result)
+            _results.value!!.add(result)
         }
         else {
-            val filteredRaceNumber = _results.value.indexOfFirst { it.raceNumber == raceNumber}
+            val filteredRaceNumber = _results.value!!.indexOfFirst { it.raceNumber == raceNumber}
             if (filteredRaceNumber != -1){
-                with(_results.value[filteredRaceNumber]) {
+                with(_results.value!![filteredRaceNumber]) {
                     finishTime = time
                     finishImage = imagePath
                     contentUriFinish = uri
@@ -199,7 +174,7 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
             }
             else {
                 val result = RaceResult(raceNumber = raceNumber, finishTime = time, finishImage = imagePath, contentUriFinish = uri)
-                _results.value.add(result)
+                _results.value!!.add(result)
             }
         }
     }

@@ -86,7 +86,7 @@ class ObjectDetectionFragment(
         '*/
 
         //Use for testing purpose with app resources
-        val imageBitmap = BitmapFactory.decodeResource(context.resources,  R.drawable.dsc_8349)
+        val imageBitmap = BitmapFactory.decodeResource(context.resources,  R.drawable.sample_image_finish)
         // Pass Bitmap to the object detector helper for processing and detection
         detect(imageBitmap)
     }

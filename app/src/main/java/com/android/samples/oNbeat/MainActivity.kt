@@ -28,14 +28,6 @@ class MainActivity : AppCompatActivity(){
         Manifest.permission.ACCESS_WIFI_STATE,
         Manifest.permission.CHANGE_WIFI_STATE
     )
-    private val reqPermissionsHotspot32 = arrayOf(
-        Manifest.permission.ACCESS_FINE_LOCATION,
-        Manifest.permission.ACCESS_COARSE_LOCATION
-    )
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    private val reqPermissionsHotspot33 = arrayOf(
-        Manifest.permission.NEARBY_WIFI_DEVICES
-    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,20 +35,12 @@ class MainActivity : AppCompatActivity(){
         if (!haveNetworkPermission()) {
             permReqLauncher.launch(reqPermissionsNetwork)
         }
-        if (!haveStoragePermission()) {
-            permReqLauncher.launch(reqPermissionsStorage)
-        }
         startServer()
     }
     //----------------------------------------------------------------------------------------------------
     //Permission handling
 
     //Simple permission check
-    private fun haveStoragePermission():Boolean {
-        return ((ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
-                && (ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED))
-        //The result of externalStorageManager is not checked immediately. It is checked every time an image is about to be changed.
-    }
     private fun haveNetworkPermission():Boolean {
         return ((ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.INTERNET) == PackageManager.PERMISSION_GRANTED)
                 && (ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_NETWORK_STATE) == PackageManager.PERMISSION_GRANTED)

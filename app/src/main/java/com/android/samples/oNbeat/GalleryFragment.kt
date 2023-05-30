@@ -1,15 +1,18 @@
 package com.android.samples.oNbeat
 
+import android.content.ContentResolver
 import android.graphics.Color
 import android.graphics.PorterDuff
 import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AlphaAnimation
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.setFragmentResultListener
@@ -22,7 +25,10 @@ import com.android.samples.oNbeat.viewmodels.FTPClientViewModel
 import com.android.samples.oNbeat.viewmodels.GalleryFragmentViewModel
 import com.bumptech.glide.Glide
 import org.tensorflow.lite.task.vision.detector.Detection
+import java.io.BufferedReader
 import java.io.File
+import java.io.IOException
+import java.io.InputStreamReader
 import java.text.SimpleDateFormat
 import java.util.concurrent.Executor
 
@@ -42,6 +48,7 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
 
 
     private lateinit var binding: GalleryFragmentBinding
+    private lateinit var contentResolver: ContentResolver
     private val buttonClick = AlphaAnimation(0f, 1f)
     private val timeAdjustFragment = TimeAdjustFragment()
     private lateinit var odf:  ObjectDetectionFragment
@@ -55,8 +62,25 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
     //fun onViewCreated defines onClickListener and restores the Fragment according to the ViewModel-Variables
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // -----------------------------------------------------------------------------------------
+        // Initiate Object Detection
+        // -----------------------------------------------------------------------------------------
         odf = ObjectDetectionFragment(context = requireContext(), objectDetectorListener = this)
 
+        // -----------------------------------------------------------------------------------------
+        // Attach the galleryAdapter
+        // -----------------------------------------------------------------------------------------
+        contentResolver = requireContext().contentResolver
+        val galleryAdapter = GalleryAdapter { result, posi ->
+            onImageClick(result, posi)
+        }
+
+        //Bind the GalleryAdapter to the RecyclerView-Grid
+        binding.gallery.also { viewX ->
+            viewX.layoutManager = GridLayoutManager(requireContext(), 1)
+            viewX.adapter = galleryAdapter
+        }
         // -----------------------------------------------------------------------------------------
         // Observers Functions
         // -----------------------------------------------------------------------------------------
@@ -65,11 +89,13 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
             if (imagesToDownload.isNotEmpty()) {
                 println("Incoming Picture")
                 ftpClient = FTPClient(
+                    true,
                     ftpViewModel.hostOne.value,
                     ftpViewModel.ftpPort.value,
                     ftpViewModel.userName.value,
                     ftpViewModel.pW.value,
-                    imagesToDownload
+                    imagesToDownload,
+                    requireContext().filesDir.path
                 )
                 ftpThread = Thread(ftpClient)
                 ftpThread!!.start()
@@ -81,11 +107,13 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
             if (imagesToDownload.isNotEmpty()) {
                 println("Incoming Picture")
                 ftpClient = FTPClient(
+                    false,
                     ftpViewModel.hostTwo.value,
                     ftpViewModel.ftpPort.value,
                     ftpViewModel.userName.value,
                     ftpViewModel.pW.value,
-                    imagesToDownload
+                    imagesToDownload,
+                    requireContext().filesDir.path
                 )
                 ftpThread = Thread(ftpClient)
                 ftpThread!!.start()
@@ -105,6 +133,10 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
             binding.devicesConnected.text = devicesConnected.toString()
         }
 
+        val raceResultObserver = Observer<MutableList<RaceResult>> { resultList ->
+            galleryAdapter.submitList(resultList)
+        }
+
         // -----------------------------------------------------------------------------------------
         // Observer Registration
         // -----------------------------------------------------------------------------------------
@@ -112,6 +144,7 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
         ftpViewModel.picDownloadTwo.observe(viewLifecycleOwner, esp2Observer)
         ftpViewModel.hotspot.observe(viewLifecycleOwner, hotspotObserver)
         ftpViewModel.connectedDevices.observe(viewLifecycleOwner, devicesObserver)
+        viewModel.results.observe(viewLifecycleOwner, raceResultObserver)
 
         // ToDo: Ist an dieser Stelle nur zum ausprobieren
         //odf.detectObjects("Teststring")
@@ -123,16 +156,6 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
         binding.icSave.setOnClickListener { onSaveClick() }
         binding.icHotspot.setOnClickListener { onHotspotClick() }
         binding.devicesConnected.setOnClickListener { onDevicesClick() }
-
-        val galleryAdapter = GalleryAdapter { image, posi ->
-            onImageClick(image, posi)
-        }
-
-        //Bind the GalleryAdapter to the RecyclerView-Grid
-        binding.gallery.also { viewX ->
-            viewX.layoutManager = GridLayoutManager(requireContext(), 1)
-            viewX.adapter = galleryAdapter
-        }
 
         //FragmentResultListener for the DateTimePickerFragment. This Code is executed, once a date is selected
         setFragmentResultListener("requestKey") { _, bundle ->
@@ -161,7 +184,35 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
     // ---------------------------------------------------------------------------------------------
     // Read/Write .csv data
     // ---------------------------------------------------------------------------------------------
-
+    @Throws(IOException::class)
+    private fun readTextFromUri(uri: Uri): List<RaceResult> {
+        val directoryPath: String = "/storage/emulated/0/DCIM/oNbeat/SampleData/"
+        val lineSequence: Sequence<String>
+        var raceResultList: List<RaceResult> = emptyList()
+        contentResolver.openInputStream(uri)?.use { inputStream ->
+            BufferedReader(InputStreamReader(inputStream)).use { reader ->
+                val header = reader.readLine()
+                lineSequence = reader.lineSequence()
+                raceResultList = lineSequence.filter { it.isNotBlank() }
+                    .map {
+                        val (raceNumber,
+                            startTime,
+                            startImage,
+                            finishTime,
+                            finishImage) = it.split(',', ignoreCase = true, limit = 5)
+                        RaceResult(raceNumber.trim().toInt(),
+                            startTime.trim().toLong(),
+                            startImage.trim(),
+                            Uri.parse(directoryPath+startImage.trim()),
+                            finishTime.trim().toLong(),
+                            finishImage.trim(),
+                            Uri.parse(directoryPath+finishImage.trim()),
+                            finishTime.trim().toLong()-startTime.trim().toLong())
+                    }.toList()
+            }
+        }
+        return raceResultList
+    }
     fun readCsv(inputFile: File): List<RaceResult> {
         //Todo("Pass directorypath to FTPClient. Redundant data atm."
         val directoryPath: String = "/storage/emulated/0/DCIM/oNbeat/SampleData/"
@@ -237,12 +288,23 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
     }
 
     private fun onOpenClick() {
-        val directoryPath: String = "/storage/emulated/0/DCIM/oNbeat/SampleData/"
+        val directoryPath: String = requireContext().filesDir.path
         {
             TODO("Auswahl des Files über Dialog")
         }
-        val importResults = readCsv( File(directoryPath+"ux47aW_20230528"))
-        viewModel.importResults(importResults)
+
+        val file = File(requireContext().filesDir,"settings.txt")
+        if(!file.exists()){file.createNewFile()}
+        println(requireContext().filesDir)
+        if (!File(directoryPath+"ux47aW_20230528.csv").exists()) {
+            val fileUri = MediaStore.getMediaUri(requireContext(), Uri.parse(directoryPath+"ux47aW_20230528.csv"))
+            //val fileUri = File(directoryPath+"ux47aW_20230528.csv").toUri()
+            val importResults = fileUri?.let { readTextFromUri(it) }
+            //val importResults = readCsv(File(directoryPath + ""))
+            if (importResults != null) {
+                viewModel.importResults(importResults)
+            }
+        }
     }
 
     private fun onSaveClick(){
@@ -256,12 +318,9 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
     private fun onDevicesClick(){
         Toast.makeText(requireContext(),"Devices connected: ${ftpViewModel.connectedDevices}",Toast.LENGTH_LONG).show()
     }
-    private fun applyChanges(){
-        //MediaScannerConnection.scanFile(requireContext(), arrayOf(fullPathNF), arrayOf("image/jpeg"),null)
-    }
 
     // ---------------------------------------------------------------------------------------------
-    // Other functions
+    // Other functions. To be DELETED
     // ---------------------------------------------------------------------------------------------
 
     //Set background and colorfilter depending on selection status
@@ -319,50 +378,53 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
     }
 
 
-    //----------------------------------------------------------------------------------------------------
-    //Galleryadapter
+    // ---------------------------------------------------------------------------------------------
+    // Binding of a race result to Recyclerview Gallery
+    // ---------------------------------------------------------------------------------------------
     private inner class GalleryAdapter(val onClick: (RaceResult, Int) -> Unit) :
-        ListAdapter<RaceResult, ImageViewHolder>(RaceResult.DiffCallback) {
+        ListAdapter<RaceResult, ResultViewHolder>(RaceResult.DiffCallback) {
 
         //Create a new ViewHolder for RecyclerView
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ImageViewHolder {
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ResultViewHolder {
             val layoutInflater = LayoutInflater.from(parent.context)
             //Inflate the recyclerview_detail (ImageView)
-            val view = layoutInflater.inflate(R.layout.recyclerview_detail, parent, false)
-            return ImageViewHolder(view, onClick)
+            val view = layoutInflater.inflate(R.layout.race_result, parent, false)
+            return ResultViewHolder(view, onClick)
         }
 
         //Update content of RecyclerView
-        override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
-            val mediaStoreImage = getItem(position)
-            holder.rootView.tag = mediaStoreImage
+        override fun onBindViewHolder(holder: ResultViewHolder, position: Int) {
+            val raceResult = getItem(position)
+            holder.rootView.tag = raceResult
+            holder.raceNumber.text = raceResult.raceNumber.toString()
 
-            //Bind the image as a thumbnail into the ImageView using Glide
-            Glide.with(holder.imageView)
-                .load(mediaStoreImage.contentUriStart)
-                .thumbnail(0.33f)
-                .centerCrop()
-                .into(holder.imageView)
+            if (raceResult.startImage.isNotEmpty()) {
+                Glide.with(holder.startImage)
+                    .load(raceResult.contentUriStart)
+                    .thumbnail(0.33f)
+                    .centerCrop()
+                    .into(holder.startImage)
+                holder.startTime.text = raceResult.startTime.toString()
+            }
 
-            //If the image is already selected
-            if (viewModel.viewHolds.value.contains(position)) {
-                holder.imageView.isSelected = true
-                //Set the colorfilter
-                holder.imageView.setColorFilter(Color.LTGRAY, PorterDuff.Mode.SCREEN)
-                //Add round edges
-                holder.imageView.setBackgroundResource(R.drawable.rounded_bg)
-            } else {
-                holder.imageView.isSelected = false
-                //Remove the colorfilter
-                holder.imageView.clearColorFilter()
-                //Remove round edges
-                holder.imageView.setBackgroundResource(R.color.colorPrimary)
+            if (raceResult.finishImage.isNotEmpty()){
+                Glide.with(holder.finishImage)
+                    .load(raceResult.contentUriStart)
+                    .thumbnail(0.33f)
+                    .centerCrop()
+                    .into(holder.finishImage)
+                holder.finishTime.text = raceResult.finishTime.toString()
+            }
+
+            if ( raceResult.startImage.isNotEmpty() && raceResult.finishImage.isNotEmpty()){
+                holder.totalTime.text = raceResult.totalTime.toString()
             }
         }
     }
 
-    //Show the view to grant the External Storage Manager Permission
-    // ############################ TF PART
+    // ---------------------------------------------------------------------------------------------
+    // Fragment Listener for Object Detection
+    // ---------------------------------------------------------------------------------------------
 
     override fun onError(error: String) {
         activity?.runOnUiThread {

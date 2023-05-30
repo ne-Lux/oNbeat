@@ -14,10 +14,9 @@ import java.nio.file.Files
 import kotlin.io.path.Path
 
 
-class FTPClient(private val host: String, private val port: Int, private val user: String, private val pw: String, private val downloadList: List<String>): Runnable {
+class FTPClient(private val firstESP32: Boolean, private val host: String, private val port: Int, private val user: String, private val pw: String, private val downloadList: List<String>, private val directoryPath: String): Runnable {
 
     private var ftpClient = FTPClient()
-    private val directoryPath: String = "/storage/emulated/0/DCIM/oNbeat/"
     private var isConnected = false
 
     init {
@@ -29,7 +28,11 @@ class FTPClient(private val host: String, private val port: Int, private val use
         login(user, pw)
         println("logged in")
         for (file in downloadList) {
-            val fileName = "picture_$file.jpg"
+            val fileName: String = if (firstESP32) {
+                "start_$file.jpg"
+            } else {
+                "finish_$file.jpg"
+            }
             val destFilePath = directoryPath + fileName
             if (!Files.exists(Path(directoryPath))) Files.createDirectory(Path(directoryPath))
             val newFile = File(destFilePath)
