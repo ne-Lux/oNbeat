@@ -1,10 +1,15 @@
 package com.android.samples.oNbeat
 
+import android.app.Activity
 import android.content.ContentResolver
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.PorterDuff
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
+import android.os.FileUtils
 import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
@@ -12,7 +17,11 @@ import android.view.ViewGroup
 import android.view.animation.AlphaAnimation
 import android.widget.ImageView
 import android.widget.Toast
-import androidx.core.net.toUri
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.ActivityResultCallback
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.setFragmentResultListener
@@ -27,6 +36,7 @@ import com.bumptech.glide.Glide
 import org.tensorflow.lite.task.vision.detector.Detection
 import java.io.BufferedReader
 import java.io.File
+import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStreamReader
 import java.text.SimpleDateFormat
@@ -184,36 +194,7 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
     // ---------------------------------------------------------------------------------------------
     // Read/Write .csv data
     // ---------------------------------------------------------------------------------------------
-    @Throws(IOException::class)
-    private fun readTextFromUri(uri: Uri): List<RaceResult> {
-        val directoryPath: String = "/storage/emulated/0/DCIM/oNbeat/SampleData/"
-        val lineSequence: Sequence<String>
-        var raceResultList: List<RaceResult> = emptyList()
-        contentResolver.openInputStream(uri)?.use { inputStream ->
-            BufferedReader(InputStreamReader(inputStream)).use { reader ->
-                val header = reader.readLine()
-                lineSequence = reader.lineSequence()
-                raceResultList = lineSequence.filter { it.isNotBlank() }
-                    .map {
-                        val (raceNumber,
-                            startTime,
-                            startImage,
-                            finishTime,
-                            finishImage) = it.split(',', ignoreCase = true, limit = 5)
-                        RaceResult(raceNumber.trim().toInt(),
-                            startTime.trim().toLong(),
-                            startImage.trim(),
-                            Uri.parse(directoryPath+startImage.trim()),
-                            finishTime.trim().toLong(),
-                            finishImage.trim(),
-                            Uri.parse(directoryPath+finishImage.trim()),
-                            finishTime.trim().toLong()-startTime.trim().toLong())
-                    }.toList()
-            }
-        }
-        return raceResultList
-    }
-    fun readCsv(inputFile: File): List<RaceResult> {
+    private fun readCsv(inputFile: File): List<RaceResult> {
         //Todo("Pass directorypath to FTPClient. Redundant data atm."
         val directoryPath: String = "/storage/emulated/0/DCIM/oNbeat/SampleData/"
         val reader = inputFile.bufferedReader()
@@ -288,23 +269,15 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
     }
 
     private fun onOpenClick() {
-        val directoryPath: String = requireContext().filesDir.path
+        val externalPath: String = "/storage/emulated/0/DCIM/oNbeat/SampleData"
         {
             TODO("Auswahl des Files über Dialog")
         }
-
-        val file = File(requireContext().filesDir,"settings.txt")
-        if(!file.exists()){file.createNewFile()}
-        println(requireContext().filesDir)
-        if (!File(directoryPath+"ux47aW_20230528.csv").exists()) {
-            val fileUri = MediaStore.getMediaUri(requireContext(), Uri.parse(directoryPath+"ux47aW_20230528.csv"))
-            //val fileUri = File(directoryPath+"ux47aW_20230528.csv").toUri()
-            val importResults = fileUri?.let { readTextFromUri(it) }
-            //val importResults = readCsv(File(directoryPath + ""))
-            if (importResults != null) {
-                viewModel.importResults(importResults)
-            }
+        if (File(externalPath+"/ux47aW_20230528.csv").exists()) {
+            val importResults = readCsv(File(externalPath+"/ux47aW_20230528.csv"))
+            viewModel.importResults(importResults)
         }
+
     }
 
     private fun onSaveClick(){
