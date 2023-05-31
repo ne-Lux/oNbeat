@@ -224,7 +224,8 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
 
     //ClickHandler for image
     private fun onImageClick(image: RaceResult, posi: Int) {
-        //If Date by image selection is active
+        Toast.makeText(requireContext(),image.raceNumber.toString(), Toast.LENGTH_LONG).show()
+    //If Date by image selection is active
         /*
         if(viewModel.byImage.value && viewModel.dateSelect.value){
             //Format the dateModified of the image
