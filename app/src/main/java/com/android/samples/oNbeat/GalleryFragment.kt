@@ -210,10 +210,10 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
                 RaceResult(raceNumber.trim().toInt(),
                     startTime.trim().toLong(),
                     startImage.trim(),
-                    Uri.parse(directoryPath+startImage.trim()),
+                    Uri.parse("file://"+directoryPath+startImage.trim()),
                     finishTime.trim().toLong(),
                     finishImage.trim(),
-                    Uri.parse(directoryPath+finishImage.trim()),
+                    Uri.parse("file://"+directoryPath+finishImage.trim()),
                     finishTime.trim().toLong()-startTime.trim().toLong())
             }.toList()
     }

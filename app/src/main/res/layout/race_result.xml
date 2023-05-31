@@ -8,6 +8,15 @@
     android:id="@+id/imageLayout"
     android:clipToOutline="true">
 
+    <View
+        android:id="@+id/bar0"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginStart="1dp"
+        android:layout_marginEnd="1dp"
+        android:background="#FFFFFF"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
     <TextView
         android:id="@+id/label_race_number"
         android:layout_width="90dp"
@@ -113,9 +122,10 @@
         android:layout_marginEnd="8dp"
         android:layout_marginTop="2dp"
         android:contentDescription="@string/image_start"
-        android:src="@drawable/sample_image_start"
+        app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintStart_toEndOf="@+id/label_start_time"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintTop_toTopOf="parent"
+        android:clipToOutline="true"/>
 
     <TextView
         android:id="@+id/label_finish"
@@ -155,8 +165,9 @@
         android:layout_marginEnd="8dp"
         android:layout_marginTop="2dp"
         android:contentDescription="@string/image_finish"
-        android:src="@drawable/sample_image_finish"
+        app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintStart_toEndOf="@+id/label_finish_time"
-        app:layout_constraintTop_toBottomOf="@id/image_start"/>
+        app:layout_constraintTop_toBottomOf="@id/image_start"
+        android:clipToOutline="true"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
