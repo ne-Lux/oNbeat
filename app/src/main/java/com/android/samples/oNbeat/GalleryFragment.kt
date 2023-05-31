@@ -167,6 +167,14 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
         binding.icHotspot.setOnClickListener { onHotspotClick() }
         binding.devicesConnected.setOnClickListener { onDevicesClick() }
 
+        // -----------------------------------------------------------------------------------------
+        // Initial States
+        // -----------------------------------------------------------------------------------------
+        if (ftpViewModel.hotspot.value!!){
+            binding.icHotspot.setImageResource(R.drawable.ic_hotspot)
+        } else {
+            binding.icHotspot.setImageResource(R.drawable.ic_hotspot_off)
+        }
         //FragmentResultListener for the DateTimePickerFragment. This Code is executed, once a date is selected
         setFragmentResultListener("requestKey") { _, bundle ->
             val justdate = bundle.getString("justDate")!!
