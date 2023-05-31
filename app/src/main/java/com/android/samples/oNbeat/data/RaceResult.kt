@@ -27,11 +27,9 @@ data class RaceResult(
     var raceNumber: Int,
     var startTime: Long = 0,
     var startImage: String = "",
-    //Todo: Sample image benennen
     var contentUriStart: Uri = Uri.parse(""),
     var finishTime: Long = 0,
     var finishImage: String = "",
-    //Todo: Sample image benennen
     var contentUriFinish: Uri = Uri.parse(""),
     var totalTime: Long = 0,
 ) {

@@ -1,27 +1,16 @@
 package com.android.samples.oNbeat
 
-import android.app.Activity
 import android.content.ContentResolver
-import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.PorterDuff
 import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
-import android.os.FileUtils
-import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AlphaAnimation
 import android.widget.ImageView
 import android.widget.Toast
-import androidx.activity.result.ActivityResult
-import androidx.activity.result.ActivityResultCallback
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.setFragmentResultListener
@@ -34,11 +23,7 @@ import com.android.samples.oNbeat.viewmodels.FTPClientViewModel
 import com.android.samples.oNbeat.viewmodels.GalleryFragmentViewModel
 import com.bumptech.glide.Glide
 import org.tensorflow.lite.task.vision.detector.Detection
-import java.io.BufferedReader
 import java.io.File
-import java.io.FileNotFoundException
-import java.io.IOException
-import java.io.InputStreamReader
 import java.text.SimpleDateFormat
 import java.util.concurrent.Executor
 
@@ -60,7 +45,6 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
     private lateinit var binding: GalleryFragmentBinding
     private lateinit var contentResolver: ContentResolver
     private val buttonClick = AlphaAnimation(0f, 1f)
-    private val timeAdjustFragment = TimeAdjustFragment()
     private lateinit var odf:  ObjectDetectionFragment
 
     //Initiate the binding
@@ -175,28 +159,6 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
         } else {
             binding.icHotspot.setImageResource(R.drawable.ic_hotspot_off)
         }
-        //FragmentResultListener for the DateTimePickerFragment. This Code is executed, once a date is selected
-        setFragmentResultListener("requestKey") { _, bundle ->
-            val justdate = bundle.getString("justDate")!!
-            val finaldate = bundle.getString("finalDate")!!
-            val dateTimeFormat = SimpleDateFormat("yyyy:MM:dd HH:mm:ss")
-            val datetime = dateTimeFormat.parse(finaldate)!!
-
-            //No date selection mode any more
-            viewModel.setdateSelect(tag = false)
-            //Restore ic_start/stop_calendar (not clicked)
-        }
-
-        //FragmentResultListener for the DateTimePickerFragment. This Code is executed once the view is canceled.
-        setFragmentResultListener("destroyedDPD") { _, _ ->
-            //Restore ic_start/stop_calendar (not clicked)
-        }
-        //FragmentResultListener for the DateDialogFragment. This Code is executed once the view is canceled.
-        setFragmentResultListener("destroyedDD") { _, _ ->
-            //Restore ic_start/stop_calendar (not clicked)
-        }
-
-
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -214,7 +176,7 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
                     startTime,
                     startImage,
                     finishTime,
-                    finishImage) = it.split(',', ignoreCase = true, limit = 5)
+                    finishImage) = it.split(',', ignoreCase = true, limit = 6)
                 RaceResult(raceNumber.trim().toInt(),
                     startTime.trim().toLong(),
                     startImage.trim(),
@@ -231,8 +193,12 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
     // ---------------------------------------------------------------------------------------------
 
     //ClickHandler for image
-    private fun onImageClick(image: RaceResult, posi: Int) {
-        Toast.makeText(requireContext(),image.raceNumber.toString(), Toast.LENGTH_LONG).show()
+    private fun onImageClick(raceResult: RaceResult, posi: Int) {
+        val correctRNFragment = CorrectRaceNumberFragment()
+        val args = Bundle()
+        args.putInt("raceNumber", raceResult.raceNumber)
+        correctRNFragment.arguments = args
+        correctRNFragment.show(parentFragmentManager, "CorrectRN_tag")
     //If Date by image selection is active
         /*
         if(viewModel.byImage.value && viewModel.dateSelect.value){
@@ -391,7 +357,7 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
 
             if (raceResult.finishImage.isNotEmpty()){
                 Glide.with(holder.finishImage)
-                    .load(raceResult.contentUriStart)
+                    .load(raceResult.contentUriFinish)
                     .thumbnail(0.33f)
                     .centerCrop()
                     .into(holder.finishImage)

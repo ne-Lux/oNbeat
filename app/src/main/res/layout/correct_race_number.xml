@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/correct_race_number"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="3dp"
+    app:cardBackgroundColor="@color/colorPrimary"
+    android:layout_margin="40dp"
+    android:showDividers="middle">
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+                <ImageView
+                    android:layout_marginTop="5dp"
+                    android:layout_marginStart="5dp"
+                    android:layout_marginEnd="5dp"
+                    android:layout_marginBottom="5dp"
+                    android:layout_width="160dp"
+                    android:layout_height="120dp"
+                    android:scaleType="centerCrop"
+                    android:id="@+id/start_image"
+                    />
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/stextField"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/label_start"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">>
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:id="@+id/start_number_input"
+                        android:text=" "
+                        app:counterEnabled="true"
+                        app:counterMaxLength="5"/>
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
+            <View
+                android:layout_width="4dp"
+                android:layout_height="match_parent"
+                android:background="@color/colorAccent"
+                android:layout_margin="10dp"/>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+                <ImageView
+                    android:layout_marginTop="5dp"
+                    android:layout_marginStart="5dp"
+                    android:layout_marginEnd="5dp"
+                    android:layout_marginBottom="5dp"
+                    android:layout_width="160dp"
+                    android:layout_height="120dp"
+                    android:scaleType="centerCrop"
+                    android:id="@+id/finish_image"
+                    />
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/ftextField"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/label_finish"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">>
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:id="@+id/finish_number_input"
+                        android:text=" "
+                        app:counterEnabled="true"
+                        app:counterMaxLength="5"/>
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
+        </LinearLayout>
+    <Button
+        android:id="@+id/button"
+        android:layout_marginTop="20dp"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_gravity="center"
+        android:text="@string/apply" />
+    </LinearLayout>
+
+
+</androidx.cardview.widget.CardView>

@@ -32,6 +32,7 @@
     <string name="label_finish_time">23456789</string>
     <string name="label_finish">Finish</string>
     <string name="image_finish">finish image</string>
+    <string name="apply">Apply</string>
 
     <string name="connected">0</string>
     <string name="hotspot">ic_hotspot</string>
