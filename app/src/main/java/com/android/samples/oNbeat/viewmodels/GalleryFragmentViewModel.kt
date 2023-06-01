@@ -52,7 +52,6 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
     //----------------------------------------------------------------------------------------------------
     //Interface funs for fragments to set variables
 
-
     //fun to define, if start- or stopdate will be selected
     fun setMode(){
         _trackMode.value = !_trackMode.value
