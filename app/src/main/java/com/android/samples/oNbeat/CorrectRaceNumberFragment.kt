@@ -37,7 +37,6 @@ class CorrectRaceNumberFragment: DialogFragment (R.layout.correct_race_number){
     //ClickHandler for imagebutton
     private fun onApplyClick(){
         //Store date selection mode
-        viewModel.setbyImage(true)
         //close this dialog
         dismiss()
     }

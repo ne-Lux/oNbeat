@@ -146,6 +146,7 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
         binding.icSave.setOnClickListener { onSaveClick() }
         binding.icHotspot.setOnClickListener { onHotspotClick() }
         binding.devicesConnected.setOnClickListener { onDevicesClick() }
+        binding.icMode.setOnClickListener { onModeClick() }
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -197,7 +198,15 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
             val importResults = readCsv(File(externalPath+"/ux47aW_20230528.csv"))
             viewModel.importResults(importResults)
         }
+    }
 
+    private fun onModeClick(){
+        viewModel.setMode()
+        if (viewModel.trackMode.value){
+            binding.icMode.setImageResource(R.drawable.ic_track)
+        } else {
+            binding.icMode.setImageResource(R.drawable.ic_loop)
+        }
     }
 
     private fun onSaveClick(){
@@ -212,65 +221,7 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
         Toast.makeText(requireContext(),"Devices connected: ${ftpViewModel.connectedDevices}",Toast.LENGTH_LONG).show()
     }
 
-    // ---------------------------------------------------------------------------------------------
-    // Other functions. To be DELETED
-    // ---------------------------------------------------------------------------------------------
-
-    //Set background and colorfilter depending on selection status
-    private fun handleSelection(select: Boolean, position: Int = -1){ //attribute select is not needed yet. It is introduced to be used for a range selection
-        val recyclerview = binding.gallery
-        val viewIterator: ListIterator<Int> = viewModel.viewHolds.value.listIterator()
-
-        //If a specific position is given
-        if (position != -1){
-            val holder = recyclerview.findViewHolderForAdapterPosition(position)
-            val imageview = holder!!.itemView.findViewById<ImageView>(R.id.image)
-
-            //if the variable inside the ViewModel contains this position == the image should be highlighted as selected
-            if (viewModel.viewHolds.value.contains(position)){
-                imageview.isSelected = true
-                //Set a colorfilter
-                imageview.setColorFilter(Color.GRAY, PorterDuff.Mode.SCREEN)
-                //Add round edges to the image
-                imageview.setBackgroundResource(R.drawable.rounded_bg)
-            }
-            else {
-                imageview.isSelected = false
-                //Remove colorfilter
-                imageview.clearColorFilter()
-                //Remove round edges
-                imageview.setBackgroundResource(R.color.colorPrimary)
-            }
-        }
-        //If no specific position is given, iterate over all views stored inside the ViewModel
-        else {
-            while (viewIterator.hasNext()) {
-                try{
-                    val holder = recyclerview.findViewHolderForAdapterPosition(viewIterator.next())
-                    val imageview = holder!!.itemView.findViewById<ImageView>(R.id.image)
-                    //If the image should be selected (unused at the moment - can be used for range selection)
-                    if (select) {
-                        imageview.isSelected = true
-                        imageview.setColorFilter(Color.GRAY, PorterDuff.Mode.SCREEN)
-                        imageview.setBackgroundResource(R.drawable.rounded_bg)
-                    } else {
-                        imageview.isSelected = false
-                        //Remove colorfilter
-                        imageview.clearColorFilter()
-                        //Remove round edges
-                        imageview.setBackgroundResource(R.color.colorPrimary)
-                    }
-                }
-                //Catch Exception - occurs if the viewHolder for this position is not inside the view range (because you scrolled up/down)
-                catch (e: Exception) {
-                    //Do nothing. The removal of the highlighting will then be made by onBindViewHolder
-                }
-
-            }
-        }
-    }
-
-
+    
     // ---------------------------------------------------------------------------------------------
     // Binding of a race result to Recyclerview Gallery
     // ---------------------------------------------------------------------------------------------
