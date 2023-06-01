@@ -31,7 +31,7 @@ import java.util.concurrent.Executor
 /*
 GalleryFragment that displays the main fragment and handles the associated button-clicks
  */
-class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
+class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTPClient.FileListener{
 
     //Initiate ViewModel, binding, permissions and other variables
     private val viewModel: GalleryFragmentViewModel by activityViewModels()
@@ -39,7 +39,6 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
 
     private var ftpThread: Thread? = null
     private lateinit var ftpClient: FTPClient
-    private val executor: Executor? = null
 
 
     private lateinit var binding: GalleryFragmentBinding
@@ -89,7 +88,8 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
                     ftpViewModel.userName.value,
                     ftpViewModel.pW.value,
                     imagesToDownload,
-                    requireContext().filesDir.path
+                    "/storage/emulated/0/DCIM/oNbeat/SampleData/",
+                    this
                 )
                 ftpThread = Thread(ftpClient)
                 ftpThread!!.start()
@@ -107,7 +107,8 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
                     ftpViewModel.userName.value,
                     ftpViewModel.pW.value,
                     imagesToDownload,
-                    requireContext().filesDir.path
+                    "/storage/emulated/0/DCIM/oNbeat/SampleData/",
+                    this
                 )
                 ftpThread = Thread(ftpClient)
                 ftpThread!!.start()
@@ -199,48 +200,6 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
         args.putInt("raceNumber", raceResult.raceNumber)
         correctRNFragment.arguments = args
         correctRNFragment.show(parentFragmentManager, "CorrectRN_tag")
-    //If Date by image selection is active
-        /*
-        if(viewModel.byImage.value && viewModel.dateSelect.value){
-            //Format the dateModified of the image
-            val justdate = SimpleDateFormat("dd.MM.yy").format(image.dateModified)
-            val datetime = image.dateModified
-
-            //No date selection mode any more
-            viewModel.setdateSelect(tag = false)
-            viewModel.setbyImage(false)
-
-            //Restore ic_start/stop_calendar (not clicked)
-            initCalendarImage()
-            //Call swapDates to swap start- and stopdate, if stopdate is earlier than startdate
-            swapDates(datetime)
-            //Write the date to the specified label
-            if(viewModel.startTag.value) binding.startDate.text=justdate else binding.stopDate.text=justdate
-            //Store the date inside the ViewModel
-            viewModel.setDate(viewModel.startTag.value, datetime, justdate)
-
-            //Display an animation to give a feedback to the user, that the image click was recognized
-            val recyclerview = binding.gallery
-            val holder = recyclerview.findViewHolderForAdapterPosition(posi)
-            val imageview = holder!!.itemView.findViewById<ImageView>(R.id.image)
-            buttonClick.duration=1000
-            buttonClick.fillAfter=true
-            buttonClick.startOffset=0
-            imageview.startAnimation(buttonClick)
-        }
-        //If date selection is not active
-        else{
-            //Store/Remove the selected image in/from the ViewModel variable
-            viewModel.selectImage(image, posi)
-            //Highlight/Remove Highlighting for selected image
-            handleSelection(select = true, posi)
-            //Update the number of selected images
-            displayImagenum()
-        }
-        //Check if constraints to display the fab are already fulfilled
-        checkConstraints()
-
-         */
     }
 
     private fun onOpenClick() {
@@ -371,7 +330,7 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
     }
 
     // ---------------------------------------------------------------------------------------------
-    // Fragment Listener for Object Detection
+    // Listener for Object Detection
     // ---------------------------------------------------------------------------------------------
 
     override fun onError(error: String) {
@@ -381,6 +340,13 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener{
     }
 
     override fun onResults(results: MutableList<Detection>?, imageHeight: Int, imageWidth: Int) {
+        TODO("Not yet implemented")
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    // Listener for FTP download
+    // ---------------------------------------------------------------------------------------------
+    override fun onDownloaded(fileName: String) {
         TODO("Not yet implemented")
     }
 }

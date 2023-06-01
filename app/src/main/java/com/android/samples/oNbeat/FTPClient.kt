@@ -4,6 +4,7 @@ import androidx.fragment.app.Fragment
 import org.apache.commons.net.ftp.FTP
 import org.apache.commons.net.ftp.FTPClient
 import org.apache.commons.net.ftp.FTPReply
+import org.tensorflow.lite.task.vision.detector.Detection
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -14,7 +15,14 @@ import java.nio.file.Files
 import kotlin.io.path.Path
 
 
-class FTPClient(private val firstESP32: Boolean, private val host: String, private val port: Int, private val user: String, private val pw: String, private val downloadList: List<String>, private val directoryPath: String): Runnable {
+class FTPClient(private val firstESP32: Boolean,
+                private val host: String,
+                private val port: Int,
+                private val user: String,
+                private val pw: String,
+                private val downloadList: List<String>,
+                private val directoryPath: String,
+                private val fileListener: FileListener?): Runnable {
 
     private var ftpClient = FTPClient()
     private var isConnected = false
@@ -97,6 +105,9 @@ class FTPClient(private val firstESP32: Boolean, private val host: String, priva
         try {
             val success = ftpClient.deleteFile(fileName)
             println("File exists and deleted: $success")
+            if (success) {
+                fileListener?.onDownloaded(fileName)
+            }
         } catch (ex: IOException) {
             ex.printStackTrace()
         } catch (ex: SocketException) {
@@ -119,6 +130,12 @@ class FTPClient(private val firstESP32: Boolean, private val host: String, priva
         } catch (ex: IOException) {
             ex.printStackTrace()
         }
+    }
+
+    interface FileListener {
+        fun onDownloaded(
+            fileName: String
+        )
     }
 
     /*fun getFiles(path: String = ""): Array<FTPFile> {
