@@ -28,7 +28,6 @@ class ServerSocketActivity : AppCompatActivity() {
         println("ServerSocketActivity")
         startServerThread()
 
-        checkHotspot()
         val receiverFilter = IntentFilter("android.net.wifi.WIFI_AP_STATE_CHANGED")
         registerReceiver(hotspotReceiver, receiverFilter)
 
@@ -50,14 +49,6 @@ class ServerSocketActivity : AppCompatActivity() {
                     viewModel.setHotSpot(false)
                 }
             }
-        }
-    }
-    private fun checkHotspot() {
-        val state = intent.getIntExtra(WifiManager.EXTRA_WIFI_STATE, 0)
-        if (WifiManager.WIFI_STATE_ENABLED == state % 10) {
-            viewModel.setHotSpot(true)
-        } else {
-            viewModel.setHotSpot(false)
         }
     }
 

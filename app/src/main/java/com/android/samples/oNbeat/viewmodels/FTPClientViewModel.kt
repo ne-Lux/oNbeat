@@ -22,7 +22,7 @@ class FTPClientViewModel() : ViewModel() {
     val pW: StateFlow<String> get() = _pW
     private var _hotSpot = MutableLiveData(false)
     val hotspot: LiveData<Boolean> get() = _hotSpot
-    private var _connectedDevices = MutableLiveData(0)
+    private var _connectedDevices = MutableLiveData(-1)
     val connectedDevices: LiveData<Int> get() = _connectedDevices
     private var _picDownloadOne = MutableLiveData<MutableList<String>?>(ArrayList())
     val picDownloadOne: LiveData<MutableList<String>?> get() = _picDownloadOne
@@ -35,7 +35,7 @@ class FTPClientViewModel() : ViewModel() {
         _hotSpot.value = status
     }
     fun addDevice(){
-        _connectedDevices.value?.inc()
+        _connectedDevices.postValue(connectedDevices.value?.plus(1) )
     }
 // Set the IP address of the ESP32
     fun setIP(ipAddress: String?){
