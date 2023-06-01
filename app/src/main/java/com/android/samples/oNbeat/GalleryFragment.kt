@@ -13,7 +13,6 @@ import android.widget.ImageView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.setFragmentResultListener
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ListAdapter
@@ -24,8 +23,6 @@ import com.android.samples.oNbeat.viewmodels.GalleryFragmentViewModel
 import com.bumptech.glide.Glide
 import org.tensorflow.lite.task.vision.detector.Detection
 import java.io.File
-import java.text.SimpleDateFormat
-import java.util.concurrent.Executor
 
 
 /*
@@ -141,9 +138,6 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
         ftpViewModel.connectedDevices.observe(viewLifecycleOwner, devicesObserver)
         viewModel.results.observe(viewLifecycleOwner, raceResultObserver)
 
-        // ToDo: Ist an dieser Stelle nur zum ausprobieren
-        //odf.detectObjects("Teststring")
-
         // -----------------------------------------------------------------------------------------
         // Onclick Listeners
         // -----------------------------------------------------------------------------------------
@@ -151,15 +145,6 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
         binding.icSave.setOnClickListener { onSaveClick() }
         binding.icHotspot.setOnClickListener { onHotspotClick() }
         binding.devicesConnected.setOnClickListener { onDevicesClick() }
-
-        // -----------------------------------------------------------------------------------------
-        // Initial States
-        // -----------------------------------------------------------------------------------------
-        if (ftpViewModel.hotspot.value!!){
-            binding.icHotspot.setImageResource(R.drawable.ic_hotspot)
-        } else {
-            binding.icHotspot.setImageResource(R.drawable.ic_hotspot_off)
-        }
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -339,14 +324,44 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
         }
     }
 
-    override fun onResults(results: MutableList<Detection>?, imageHeight: Int, imageWidth: Int) {
-        TODO("Not yet implemented")
+    override fun onResults(results: MutableList<Detection>?, filePath: String, imageHeight: Int, imageWidth: Int) {
+        if (results != null) {
+            var numberString = ""
+            var bounding: Float
+            var label = ""
+            var score: Float
+            val numberList = hashMapOf<Float, String>()
+            for (number in results) {
+                score = 0F
+                bounding = number.boundingBox.left
+                for (category in number.categories) {
+                    if (category.score > score) {
+                        score = category.score
+                        label = category.label
+                    }
+                }
+                numberList[bounding] = label
+            }
+            numberList.toSortedMap()
+            for (char in numberList) {
+                numberString += char.value
+            }
+            val completeNumber = numberString.toInt()
+            val start: Boolean = filePath.substringAfterLast("/").startsWith("s",true)
+            val time: String = filePath.substringAfterLast("_").substringBeforeLast(".")
+            viewModel.registerRaceNumber(completeNumber, filePath, start,time.toLong())
+            TODO("Filename needed to register the racenumber")
+
+        }
     }
 
     // ---------------------------------------------------------------------------------------------
     // Listener for FTP download
     // ---------------------------------------------------------------------------------------------
-    override fun onDownloaded(fileName: String) {
-        TODO("Not yet implemented")
+    override fun onDownloaded(firstESP32: Boolean, number: String, destFilePath: String) {
+        odf.detectObjects(destFilePath)
+        ftpViewModel.downloadCompleted(number, firstESP32)
+
+        TODO("Remove image from picDownload in ViewModel")
     }
 }

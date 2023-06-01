@@ -28,6 +28,7 @@ import org.tensorflow.lite.task.vision.detector.Detection
 import org.tensorflow.lite.task.vision.detector.ObjectDetector
 import android.graphics.BitmapFactory
 import androidx.fragment.app.Fragment
+import java.io.File
 
 class ObjectDetectionFragment(
     var threshold: Float = 0.5f,
@@ -80,15 +81,15 @@ class ObjectDetectionFragment(
     // Update the values displayed in the bottom sheet. Reset detector.
 
     fun detectObjects(imagePath: String) {
-        /* Use for image files on the phone
-        val imageFile = File(imagePath)
-        val imageBitmap = BitmapFactory.decodeFile(imageFile.absolutePath)
-        '*/
+        // Use for image files on the phone
+        //val imageFile = File(imagePath)
+        val imageBitmap = BitmapFactory.decodeFile(imagePath) // statt imageFile.absolutePath()
 
-        //Use for testing purpose with app resources
-        val imageBitmap = BitmapFactory.decodeResource(context.resources,  R.drawable.sample_image_finish)
+
+        // Use for testing purpose with app resources
+        // val imageBitmap = BitmapFactory.decodeResource(context.resources,  R.drawable.sample_image_finish)
         // Pass Bitmap to the object detector helper for processing and detection
-        detect(imageBitmap)
+        detect(imageBitmap, filePath = imagePath)
     }
 
     // Update UI after objects have been detected. Extracts original image height/width
@@ -175,7 +176,7 @@ class ObjectDetectionFragment(
         }
     }
 
-    fun detect(image: Bitmap, imageRotation: Int = 0) {
+    fun detect(image: Bitmap, imageRotation: Int = 0, filePath: String) {
         if (objectDetector == null) {
             setupObjectDetector()
         }
@@ -192,6 +193,7 @@ class ObjectDetectionFragment(
         val results = objectDetector?.detect(tensorImage)
         objectDetectorListener?.onResults(
             results,
+            filePath,
             tensorImage.height,
             tensorImage.width)
     }
@@ -200,6 +202,7 @@ class ObjectDetectionFragment(
         fun onError(error: String)
         fun onResults(
             results: MutableList<Detection>?,
+            filePath: String,
             imageHeight: Int,
             imageWidth: Int
         )

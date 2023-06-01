@@ -36,12 +36,13 @@ class FTPClient(private val firstESP32: Boolean,
         login(user, pw)
         println("logged in")
         for (file in downloadList) {
-            val fileName: String = if (firstESP32) {
+            val outputFileName: String = if (firstESP32) {
                 "start_$file.jpg"
             } else {
                 "finish_$file.jpg"
             }
-            val destFilePath = directoryPath + fileName
+            val fileName: String = "picture_$file.jpg"
+            val destFilePath = directoryPath + outputFileName
             if (!Files.exists(Path(directoryPath))) Files.createDirectory(Path(directoryPath))
             val newFile = File(destFilePath)
             newFile.createNewFile()
@@ -50,10 +51,11 @@ class FTPClient(private val firstESP32: Boolean,
             val success = downloadFile(fileName, oFile )
             oFile.close()
             if (success) {
-                //ftpViewModel.downloadCompleted(file, firstESP32)
+                fileListener?.onDownloaded(firstESP32, file, destFilePath)
                 deleteFile(fileName)
             } else {
                 newFile.delete()
+                deleteFile(fileName)
             }
         }
         logout()
@@ -105,9 +107,6 @@ class FTPClient(private val firstESP32: Boolean,
         try {
             val success = ftpClient.deleteFile(fileName)
             println("File exists and deleted: $success")
-            if (success) {
-                fileListener?.onDownloaded(fileName)
-            }
         } catch (ex: IOException) {
             ex.printStackTrace()
         } catch (ex: SocketException) {
@@ -134,7 +133,9 @@ class FTPClient(private val firstESP32: Boolean,
 
     interface FileListener {
         fun onDownloaded(
-            fileName: String
+            firstESP32: Boolean,
+            number: String,
+            destFilePath: String
         )
     }
 
