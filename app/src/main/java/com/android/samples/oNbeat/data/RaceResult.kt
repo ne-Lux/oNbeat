@@ -37,11 +37,10 @@ data class RaceResult(
     companion object {
         val DiffCallback = object : DiffUtil.ItemCallback<RaceResult>() {
             override fun areItemsTheSame(oldItem: RaceResult, newItem: RaceResult) =
-                //TODO("geht das und braucht man das?")
                 oldItem.raceNumber == newItem.raceNumber
 
             override fun areContentsTheSame(oldItem: RaceResult, newItem: RaceResult) =
-                oldItem == newItem
+                oldItem.startImage == newItem.startImage && oldItem.finishImage == newItem.finishImage
         }
     }
 }

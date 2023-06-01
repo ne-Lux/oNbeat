@@ -125,7 +125,8 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
             binding.devicesConnected.text = devicesConnected.toString()
         }
 
-        val raceResultObserver = Observer<MutableList<RaceResult>> { resultList ->
+        val raceResultObserver = Observer<MutableList<RaceResult>?> { resultList ->
+            galleryAdapter.submitList(null)
             galleryAdapter.submitList(resultList)
         }
 
@@ -342,16 +343,14 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
                 }
                 numberList[bounding] = label
             }
-            numberList.toSortedMap()
-            for (char in numberList) {
+            val sortedList = numberList.toSortedMap()
+            for (char in sortedList) {
                 numberString += char.value
             }
             val completeNumber = numberString.toInt()
             val start: Boolean = filePath.substringAfterLast("/").startsWith("s",true)
             val time: String = filePath.substringAfterLast("_").substringBeforeLast(".")
             viewModel.registerRaceNumber(completeNumber, filePath, start,time.toLong())
-            TODO("Filename needed to register the racenumber")
-
         }
     }
 
@@ -361,7 +360,5 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
     override fun onDownloaded(firstESP32: Boolean, number: String, destFilePath: String) {
         odf.detectObjects(destFilePath)
         ftpViewModel.downloadCompleted(number, firstESP32)
-
-        TODO("Remove image from picDownload in ViewModel")
     }
 }

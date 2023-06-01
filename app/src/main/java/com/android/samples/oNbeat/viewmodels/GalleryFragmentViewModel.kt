@@ -41,8 +41,8 @@ Shared ViewModel for GalleryFragment, that is also accessed by DateDialogFragmen
  */
 class GalleryFragmentViewModel(application: Application) : AndroidViewModel(application) {
     //Variables stored inside the ViewModel and the read-only companions that can be accessed by the Fragments
-    private val _results = MutableLiveData<MutableList<RaceResult>>()
-    val results: LiveData<MutableList<RaceResult>> get() = _results
+    private val _results = MutableLiveData<MutableList<RaceResult>?>()
+    val results: LiveData<MutableList<RaceResult>?> get() = _results
 
     private var contentObserver: ContentObserver? = null
 
@@ -96,71 +96,21 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
         _dateSelect.value = tag
     }
 
-    //----------------------------------------------------------------------------------------------------
-    //Load images from storage
-    fun returnImageUri(filePath: String) {
-        //Loading images is launched as Coroutine, so that the main thread is not blocked
-        val rPath = Path(filePath)
-        val iUri = rPath.toUri()
-    }
-
-    /*private suspend fun queryImage(filePath: String): Uri {
-
-
-            //Select all attributes in projection from images
-            val projection = arrayOf(
-                MediaStore.Images.Media._ID,
-            )
-            //Where the MIME type is image/jpeg
-            val selection = "${MediaStore.Images.Media.RELATIVE_PATH} = ?"
-            val selectionArgs = arrayOf("image/jpeg")
-            //Order by Date_Modified, descending
-            val sortOrder = "${MediaStore.Images.Media.DATE_MODIFIED}  DESC"
-
-            //Execute the SQL query and return a cursor
-            getApplication<Application>().contentResolver.query(
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                projection,
-                selection,
-                selectionArgs,
-                sortOrder
-            )?.use { cursor ->
-
-                //Select the columns with the attributes of interest from the cursor
-                val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID)
-                val dateAddedColumn =
-                    cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_ADDED)
-                val dateTakenColumn =
-                    cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_TAKEN)
-                val dateModifiedColumn =
-                    cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_MODIFIED)
-                val fileNameColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.TITLE)
-                val rPathColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.RELATIVE_PATH)
-
-                //For each element inside the cursor
-                while (cursor.moveToNext()) {
-                    val id = cursor.getLong(idColumn)
-                    val contentUri = ContentUris.withAppendedId(
-                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                        id)
-
-                    //Create a MediaStoreImage with the attributes from the cursor and add it to the list, that will be stored inside the ViewModel
-                    val image = contentUri
-                }
-            }
-        }
-        return image
-    }*/
-
     fun importResults (importedResults: List<RaceResult>) {
         _results.value = importedResults.toMutableList()
     }
 
     fun registerRaceNumber (raceNumber: Int, imagePath: String, start: Boolean, time: Long){
-        val uri = Uri.parse(imagePath)
+        val uri = Uri.parse("file://"+imagePath)
         if (start) {
             val result = RaceResult(raceNumber = raceNumber, startTime = time, startImage = imagePath, contentUriStart = uri)
-            _results.value!!.add(result)
+            var currentList = _results.value
+            if (currentList!= null){
+                currentList.add(result)
+            } else {
+                currentList= listOf(result).toMutableList()
+            }
+            _results.postValue(currentList)
         }
         else {
             val filteredRaceNumber = _results.value!!.indexOfFirst { it.raceNumber == raceNumber}
@@ -174,7 +124,9 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
             }
             else {
                 val result = RaceResult(raceNumber = raceNumber, finishTime = time, finishImage = imagePath, contentUriFinish = uri)
-                _results.value!!.add(result)
+                val currentList = _results.value
+                currentList?.add(result)
+                _results.postValue(currentList)
             }
         }
     }
