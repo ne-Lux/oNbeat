@@ -1,37 +1,22 @@
 
-PhotiC
+oNbeat
 ==========================
 
 <div align="center">
-<img src="screenshots/PhotiC_launcher.png" height="256" alt="PhotiC Icon"/>
+<img src="app\src\main\res\mipmap-xxxhdpi\ic_launcher_round.png" height="256" alt="oNbeat Icon"/>
 </div>
-
-The Android application PhotiC is used to reorder multiple images at the same time without the need to specify the exact date and time for each image separately.
-
 
 Introduction
 ------------
 
-Every time an image is received via an instant messenger, the metadata is deleted. On the receiver's phone the image will pop up in the image gallery at the time where it was received, resulting in a wrongly ordered image gallery. PhotiC is an alternative to the applications out there, where you can specify the exact date and time for one image at a time. If you are looking for a chronologically sorted image gallery without the need to specify the date to the minute, PhotiC is the perfect choice.
+ONbeat project is about developing an accurate and affordable timing system for Pumptrack and Enduro bike races. The name oNbeat is derived from the English word offbeat in the sense that the system is unconventional while replacing the prefix with oN implies the accuracy of the system. The unconventional detail about the timing system is that it uses a photoelectric barrier for timing combined with a camera enhanced with AI to identify the participant by his or her race number instead of the standard RFID-based timing. Identifying the participants is done on a microcontroller capturing the image to reduce network traffic and ensure functionality in case of network disconnects. Thus, the ESP32 microcontroller, a cheap but performant hardware that is capable of running small machine learning models is chosen for the timing system. In use, the microcontroller communicates for setup and data analysis purposes with an Android smartphone via WiFi. As a common network, a WiFi hotspot must be hosted by the smartphone. A custom Android app works as the user interface for the whole timing system, which guides the user through the setup process and collects and visualizes the data, once the timing system is set up properly.
 
 Requirements
 --------------
 
-- Android SDK 30
-- Android Device/Emulator API 30+
+Android Device/Emulator API 33+
 
 Installation
 --------------
 
-At the moment PhotiC is not provided via Google Play Store, so you have to install the application by downloading the PhotiC.apk file and executing it on your Android 11+ smartphone or tablet. During the installation you will be asked for your explicit agreement on installing software from an unknown source, that you have to consent.
-
-User Instructions
---------------
-
-To reorder images using PhotiC, you need to have at least one image selected and two dates chosen. 
-
-1. Image selecting: You can select images by simply clicking on them. The number of selected images is displayed in the toolbar. Deselecting of single images works the same way like selecting images - by clicking on them. If you want to deselect all images, you can click the red cancel icon in the toolbar beside the number of images selected.
-
-2. Date selection: You can select a date, by clicking on the calendar icon or the date itself. The date selection by calendar works with a standard date-picker. The according time to the date chosen is always set to 12:00 p.m. When choosing date selection by image, the date and time is taken from the next image that is clicked, whereby the image is not selected. You don't need to worry about the right order of the dates you select. If start date and stop date are reversed by mistake (start date lies beyond the stop date), PhotiC switches these dates automatically.
-
-Once you fulfilled these three conditions, a button to apply the changes is displayed. By clicking the button, the selected images will be copied and their date attributes set, so that all images are equally distributed between the two chosen dates. The original images are deleted afterwards to reduce redundant data.
+At the moment oNbeat is not provided via Google Play Store, so just clone the repository, create an .apk file and install it on your phone.
