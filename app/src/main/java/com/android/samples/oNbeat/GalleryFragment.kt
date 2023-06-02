@@ -128,6 +128,11 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
         val raceResultObserver = Observer<MutableList<RaceResult>?> { resultList ->
             galleryAdapter.submitList(null)
             galleryAdapter.submitList(resultList)
+            if(resultList.isNotEmpty()){
+                binding.icClear.visibility = View.VISIBLE
+            } else {
+                binding.icClear.visibility = View.INVISIBLE
+            }
         }
 
         // -----------------------------------------------------------------------------------------
@@ -147,6 +152,7 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
         binding.icHotspot.setOnClickListener { onHotspotClick() }
         binding.devicesConnected.setOnClickListener { onDevicesClick() }
         binding.icMode.setOnClickListener { onModeClick() }
+        binding.icClear.setOnClickListener { onClearClick() }
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -207,6 +213,10 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
         } else {
             binding.icMode.setImageResource(R.drawable.ic_loop)
         }
+    }
+
+    private fun onClearClick(){
+        viewModel.clearResults()
     }
 
     private fun onSaveClick(){

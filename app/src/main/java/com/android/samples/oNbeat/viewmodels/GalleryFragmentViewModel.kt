@@ -61,6 +61,10 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
         _results.value = importedResults.toMutableList()
     }
 
+    fun clearResults(){
+        _results.value = listOf<RaceResult>().toMutableList()
+    }
+
     fun registerRaceNumber (raceNumber: Int, imagePath: String, start: Boolean, time: Long){
         val uri = Uri.parse("file://"+imagePath)
         if (start) {

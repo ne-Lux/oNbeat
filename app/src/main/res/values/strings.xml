@@ -39,6 +39,7 @@
     <string name="open">ic_open</string>
     <string name="save">ic_save</string>
     <string name="mode">ic_mode</string>
+    <string name="clear">ic_clear</string>
     <string name="fab_apply">Apply</string>
     <string name="fab">Floating Action Button</string>
 </resources>
