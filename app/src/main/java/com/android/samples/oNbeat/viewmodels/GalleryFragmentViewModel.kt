@@ -36,11 +36,14 @@ import java.nio.file.Path
 import java.util.Date
 import kotlin.io.path.Path
 
-/*
-Shared ViewModel for GalleryFragment, that is also accessed by DateDialogFragment and DateTimePickerFragment
- */
+// ---------------------------------------------------------------------------------------------
+// Shared ViewModel for GalleryFragment that is also accessed by DialogFragments
+// ---------------------------------------------------------------------------------------------
 class GalleryFragmentViewModel(application: Application) : AndroidViewModel(application) {
-    //Variables stored inside the ViewModel and the read-only companions that can be accessed by the Fragments
+    
+    // ---------------------------------------------------------------------------------------------
+    // Variables stored inside the ViewModel and the read-only companions that can be accessed by the Fragments
+    // ---------------------------------------------------------------------------------------------
     private val _results = MutableLiveData<MutableList<RaceResult>?>()
     val results: LiveData<MutableList<RaceResult>?> get() = _results
     private var contentObserver: ContentObserver? = null
@@ -49,10 +52,9 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
     private var _trackMode = MutableStateFlow(false)
     val trackMode: StateFlow<Boolean> get() = _trackMode
 
-    //----------------------------------------------------------------------------------------------------
-    //Interface funs for fragments to set variables
-
-    //fun to define, if start- or stopdate will be selected
+    // ---------------------------------------------------------------------------------------------
+    // Simple setter functions.
+    // ---------------------------------------------------------------------------------------------
     fun setMode(){
         _trackMode.value = !_trackMode.value
     }
@@ -65,6 +67,10 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
         _results.value = listOf<RaceResult>().toMutableList()
     }
 
+    // ---------------------------------------------------------------------------------------------
+    // Add a result. Either register a new race number or add it to an existing record.
+    // ---------------------------------------------------------------------------------------------
+    
     fun registerRaceNumber (raceNumber: Int, imagePath: String, start: Boolean, time: Long){
         val uri = Uri.parse("file://"+imagePath)
         if (start) {
@@ -112,6 +118,9 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
         }
     }
     
+    // ---------------------------------------------------------------------------------------------
+    // Correct a wrong detected result.
+    // ---------------------------------------------------------------------------------------------
     fun correctRaceNumber (wrongRaceNumber: Int, rightRaceNumber: Int, start: Boolean){
         var wrongTime: Long = 0,
         var wrongImage: String = "",
@@ -121,6 +130,15 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
         val filteredNewRaceNumber = currentList!!.indexOfFirst { it.raceNumber == rightRaceNumber}
         val filteredRaceNumber = currentList!!.indexOfFirst { it.raceNumber == wrongRaceNumber}
             if (filteredRaceNumber != -1){
+                /// If start has to be corrected
+                ///     If there is just the start value and the new start number is not registered yet
+                ///     Else if there is also a finish value and the new start number is not registered yet
+                ///     Else if the new start number is already registered
+                /// If finish has to be corrected
+                ///     If there is just the finish value and the new start number is not registered yet
+                ///     Else if there is also a start value and the new start number is not registered yet
+                ///     Else if the new start number is already registered
+                
                 if(start){
                     wrongTime = _results.value!![filteredRaceNumber].startTime
                     wrongImage = _results.value!![filteredRaceNumber].startImage
@@ -134,7 +152,7 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
                     // If there are two times but there is no record for the correct race number yet
                     } else if (currentList!![filteredRaceNumber].finishTime != 0 && filteredNewRaceNumber == -1) {
                         // Register the new race number
-                        val result = RaceResult(raceNumber = rightRaceNumber, startTime = wrongTime, startImage = wrongImage, wrongContentUri = uri)
+                        val result = RaceResult(raceNumber = rightRaceNumber, startTime = wrongTime, startImage = wrongImage, contentUriStart = wrongContentUri)
                         currentList.add(result)
                         if (!trackMode.value) {
                             with(currentList!![filteredRaceNumber]) {
@@ -215,16 +233,90 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
                             // TODO("currentList.dropvalue(filteredRaceNumber)")    
                         }  
                     }
-                // if(finish)        
+                // FINISH        
                 } else {
-
+                    wrongTime = _results.value!![filteredRaceNumber].finishTime
+                    wrongImage = _results.value!![filteredRaceNumber].finishImage
+                    wrongContentUri = _results.value!![filteredRaceNumber].contentUriFinish
+                    
+                    // If there is just the start time and there is no record for the correct race number yet
+                    if(currentList!![filteredRaceNumber].startTime == 0 && filteredNewRaceNumber == -1) {
+                        // Just change the start number    
+                        currentList!![filteredRaceNumber].raceNumber = rightRaceNumber   
+                        
+                    // If there are two times but there is no record for the correct race number yet
+                    } else if (currentList!![filteredRaceNumber].startTime != 0 && filteredNewRaceNumber == -1) {
+                        // Register the new race number
+                        val result = RaceResult(raceNumber = rightRaceNumber, finishTime = wrongTime, finishImage = wrongImage, contentUriFinish = wrongContentUri)
+                        currentList.add(result)
+                        with(currentList!![filteredRaceNumber]) {
+                            startTime = 0
+                            startImage = ""
+                            contentUriStart = Uri.parse("")
+                            totalTime = 0
+                        }
+                                            
+                    // LOOP MODE only: If there is already a record for the correct race number
+                    } else if (filteredNewRaceNumber != -1 && !trackMode.value) {
+                        
+                        // If the existing record for the correct race number is not complete yet or has the right order
+                        if (currentList!![filteredNewRaceNumber].finishTime == 0 || currentList!![filteredNewRaceNumber].startTime < wrongTime){
+                            with(currentList!![filteredNewRaceNumber]) {
+                                finishTime = wrongTime
+                                finishImage = wrongImage
+                                contentUriFinish = wrongContentUri
+                                totalTime = wrongTime - startTime
+                            }                            
+                        // Existing record accidently has finish mapped to start
+                        } else {
+                            with(currentList!![filteredNewRaceNumber]) {
+                                finishTime = startTime
+                                finishImage = startImage
+                                contentUriFinish = contentUriStart
+                                startTime = wrongTime
+                                startImage = wrongImage
+                                contentUriStart = wrongContentUri
+                                totalTime = finishTime - startTime
+                            }
+                        }
+                        with(currentList!![filteredRaceNumber]) {
+                            finishTime = 0
+                            finishImage = ""
+                            contentUriFinish = Uri.parse("")
+                            totalTime = 0                           
+                        }
+                    // TRACK MODE only: Base case: there is already a record for the correct race number     
+                    } else {
+                        // If there are two finish times for this race number, take the earlier one.
+                        if (currentList!![filteredNewRaceNumber].finishTime > wrongTime) {
+                            with(currentList!![filteredNewRaceNumber]) {
+                                finishTime = wrongTime
+                                finishImage = wrongImage
+                                contentUriFinish = wrongContentUri
+                                totalTime = finishTime - startTime
+                            }
+                        }
+                        // If the old race number has a start time, set finish to zero. Else, drop the record.
+                        if (currentList!![filteredRaceNumber].startTime != 0) {
+                            with(currentList!![filteredRaceNumber]) {
+                                finishTime = 0
+                                finishImage = ""
+                                contentUriFinish = Uri.parse("")
+                                totalTime = 0
+                            }
+                        } else {
+                            // TODO("currentList.dropvalue(filteredRaceNumber)")    
+                        }  
                     }
                 }
             }
         
         
     }
-    //unregister the ContentObserver when the ViewModel is destroyed (e.g. the application is closed)
+    
+    // ---------------------------------------------------------------------------------------------
+    // Unregister the ContentObserver when the view is destroyed, e.g. the app is closed.
+    // ---------------------------------------------------------------------------------------------
     override fun onCleared() {
         contentObserver?.let {
             getApplication<Application>().contentResolver.unregisterContentObserver(it)
@@ -232,7 +324,9 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
     }
 }
 
-//fun to register a ContentObserver
+// ---------------------------------------------------------------------------------------------
+// Register a ContentObserver.
+// ---------------------------------------------------------------------------------------------
 private fun ContentResolver.registerObserver(
     uri: Uri,
     observer: (selfChange: Boolean) -> Unit
