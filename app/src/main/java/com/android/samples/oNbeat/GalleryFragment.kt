@@ -181,6 +181,33 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
                     finishTime.trim().toLong()-startTime.trim().toLong())
             }.toList()
     }
+    
+    private fun writeCsv(): String {
+        val directoryPath: String = "/storage/emulated/0/DCIM/oNbeat/SampleData/"
+        val dateTimeFormat = SimpleDateFormat("yyyy:MM:dd_HH:mm:ss")
+        val currentDT = dateTimeFormat.parse(LocalDateTime.now())
+        val outputFileName: String = "results_$currentDT.jpg"
+        val destFilePath = directoryPath + outputFileName
+        
+        if (!Files.exists(Path(directoryPath))) Files.createDirectory(Path(directoryPath))
+        val newFile = File(destFilePath)
+        newFile.createNewFile()
+        val oFile = FileOutputStream(newFile, false) 
+        oFile.apply(writeCsv)
+        oFile.close()
+        return outputFileName
+    }
+    
+    fun OutputStream.writeCsv() {
+        val writer = bufferedWriter()
+        writer.write(""""raceNumber", "startTime", "startImage", "finishTime", "finishImage", "totalTime"""")
+        writer.newLine()
+        viewModel.results.value.forEach {
+            writer.write("${it.raceNumber},${it.startTime},${it.startImage},${it.finishTime},${it.finishImage},${it.totalTime}")
+            writer.newLine()
+        }
+        writer.flush()
+    }
 
     // ---------------------------------------------------------------------------------------------
     // Clickhandler
@@ -220,7 +247,8 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
     }
 
     private fun onSaveClick(){
-        TODO()
+        val outputFileName = writeCsv()
+        Toast.makeText(requireContext(),"Saved current list to $outputFileName",Toast.LENGTH_LONG).show()
     }
 
     private fun onHotspotClick(){
