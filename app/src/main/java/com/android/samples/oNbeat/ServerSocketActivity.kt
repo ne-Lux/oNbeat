@@ -74,9 +74,9 @@ class ServerSocketActivity : AppCompatActivity() {
                     Timer().scheduleAtFixedRate(object : TimerTask() {
                         override fun run() {
                             if(socket.inetAddress.isReachable(1000)){
-                                viewModel.addDevice()
+                                socket.inetAddress.hostAddress?.let { viewModel.addDevice(it) }
                             } else {
-                                viewModel.removeDevice()
+                                socket.inetAddress.hostAddress?.let { viewModel.removeDevice(it) }
                             }
                         }
                     },5000,5000)

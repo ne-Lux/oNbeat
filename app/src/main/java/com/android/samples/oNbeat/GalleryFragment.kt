@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.view.animation.AlphaAnimation
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
@@ -128,8 +129,18 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
             }
         }
 
-        val devicesObserver = Observer<Int> { devicesConnected ->
-            binding.devicesConnected.text = devicesConnected.toString()
+        val devicesObserver = Observer<MutableList<String>?> { devicesConnected ->
+            if (binding.devicesConnected.text.toString().trim().toInt() > devicesConnected.count()) {
+                binding.devicesConnected.setTextColor(Color.RED)
+
+                AlertDialog.Builder(requireContext())
+                    .setTitle("Device disconnected")
+                    .setMessage("An ESP32 disconnected. Please save the current results and restart the application!")
+                    .setCancelable(true)
+                    .create()
+                    .show()
+            }
+            binding.devicesConnected.text = devicesConnected.count().toString()
         }
 
         val raceResultObserver = Observer<MutableList<RaceResult>?> { resultList ->

@@ -108,6 +108,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="5dp"
                                 android:hint="@string/connected"
+                                android:text="@string/connected"
                                 android:textColor="@color/white"
                                 android:textSize="16pt"
                                 android:layout_alignParentEnd="true"/>
