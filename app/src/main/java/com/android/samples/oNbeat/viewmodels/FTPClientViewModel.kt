@@ -37,6 +37,9 @@ class FTPClientViewModel() : ViewModel() {
     fun addDevice(){
         _connectedDevices.postValue(connectedDevices.value?.plus(1) )
     }
+    fun removeDevice(){
+        _connectedDevices.postValue(connectedDevices.value?.minus(1) )
+    }
 // Set the IP address of the ESP32
     fun setIP(ipAddress: String?){
         if (ipAddress != null) {

@@ -12,8 +12,11 @@ import com.android.samples.oNbeat.viewmodels.FTPClientViewModel
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
+import java.net.InetAddress
 import java.net.ServerSocket
 import java.net.Socket
+import java.util.Timer
+import java.util.TimerTask
 
 
 class ServerSocketActivity : AppCompatActivity() {
@@ -53,6 +56,7 @@ class ServerSocketActivity : AppCompatActivity() {
     }
 
     internal inner class ServerRunnable : Runnable {
+
         override fun run() {
             try {
                 serverSocket = ServerSocket(port)
@@ -64,10 +68,18 @@ class ServerSocketActivity : AppCompatActivity() {
             }
             while (!Thread.currentThread().isInterrupted) {
                 try {
-                    viewModel.addDevice()
                     val socket = serverSocket!!.accept()
                     val commThread = CommunicationThread(socket)
                     Thread(commThread).start()
+                    Timer().scheduleAtFixedRate(object : TimerTask() {
+                        override fun run() {
+                            if(socket.inetAddress.isReachable(1000)){
+                                viewModel.addDevice()
+                            } else {
+                                viewModel.removeDevice()
+                            }
+                        }
+                    },5000,5000)
                     val socketIP = socket.inetAddress.hostAddress
                     println("Client connected: $socketIP")
                     viewModel.setIP(socketIP)
