@@ -37,10 +37,10 @@ data class RaceResult(
     companion object {
         val DiffCallback = object : DiffUtil.ItemCallback<RaceResult>() {
             override fun areItemsTheSame(oldItem: RaceResult, newItem: RaceResult) =
-                oldItem.raceNumber == newItem.raceNumber
+                (oldItem.raceNumber == newItem.raceNumber) && (oldItem.startTime == newItem.startTime) && (oldItem.finishTime == newItem.finishTime)
 
             override fun areContentsTheSame(oldItem: RaceResult, newItem: RaceResult) =
-                oldItem.startImage == newItem.startImage && oldItem.finishImage == newItem.finishImage
+                (oldItem.raceNumber == newItem.raceNumber) && (oldItem.startTime == newItem.startTime) && (oldItem.finishTime == newItem.finishTime)
         }
     }
 }

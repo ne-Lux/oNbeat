@@ -23,6 +23,13 @@ import com.android.samples.oNbeat.viewmodels.GalleryFragmentViewModel
 import com.bumptech.glide.Glide
 import org.tensorflow.lite.task.vision.detector.Detection
 import java.io.File
+import java.io.FileOutputStream
+import java.io.OutputStream
+import java.nio.file.Files
+import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import kotlin.io.path.Path
 
 
 /*
@@ -126,8 +133,8 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
         }
 
         val raceResultObserver = Observer<MutableList<RaceResult>?> { resultList ->
-            galleryAdapter.submitList(null)
             galleryAdapter.submitList(resultList)
+            galleryAdapter.notifyDataSetChanged()
             if(resultList.isNotEmpty()){
                 binding.icClear.visibility = View.VISIBLE
             } else {
@@ -174,39 +181,46 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
                 RaceResult(raceNumber.trim().toInt(),
                     startTime.trim().toLong(),
                     startImage.trim(),
-                    Uri.parse("file://"+directoryPath+startImage.trim()),
+                    if (startImage != ""){
+                        Uri.parse("file://"+directoryPath+startImage.trim())
+                    } else {
+                       Uri.parse("")
+                    },
                     finishTime.trim().toLong(),
                     finishImage.trim(),
-                    Uri.parse("file://"+directoryPath+finishImage.trim()),
+                    if (finishImage != ""){
+                        Uri.parse("file://"+directoryPath+finishImage.trim())
+                    } else {
+                       Uri.parse("")
+                    },
                     finishTime.trim().toLong()-startTime.trim().toLong())
             }.toList()
     }
-    
-    private fun writeCsv(): String {
-        val directoryPath: String = "/storage/emulated/0/DCIM/oNbeat/SampleData/"
-        val dateTimeFormat = SimpleDateFormat("yyyy:MM:dd_HH:mm:ss")
-        val currentDT = dateTimeFormat.parse(LocalDateTime.now())
-        val outputFileName: String = "results_$currentDT.jpg"
-        val destFilePath = directoryPath + outputFileName
-        
-        if (!Files.exists(Path(directoryPath))) Files.createDirectory(Path(directoryPath))
-        val newFile = File(destFilePath)
-        newFile.createNewFile()
-        val oFile = FileOutputStream(newFile, false) 
-        oFile.apply(writeCsv)
-        oFile.close()
-        return outputFileName
-    }
-    
-    fun OutputStream.writeCsv() {
+    fun OutputStream.writeData() {
         val writer = bufferedWriter()
         writer.write(""""raceNumber", "startTime", "startImage", "finishTime", "finishImage", "totalTime"""")
         writer.newLine()
-        viewModel.results.value.forEach {
+        viewModel.results.value!!.forEach {
             writer.write("${it.raceNumber},${it.startTime},${it.startImage},${it.finishTime},${it.finishImage},${it.totalTime}")
             writer.newLine()
         }
         writer.flush()
+    }
+    private fun writeCsv(): String {
+        val directoryPath: String = "/storage/emulated/0/DCIM/oNbeat/SampleData/"
+        val dateTimeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss")
+        val currentDT = LocalDateTime.now().format(dateTimeFormat)
+        val outputFileName: String = "results_$currentDT.csv"
+        val destFilePath = directoryPath + outputFileName
+
+        if (!Files.exists(Path(directoryPath))) Files.createDirectory(Path(directoryPath))
+        val newFile = File(destFilePath)
+        newFile.createNewFile()
+        val oFile = FileOutputStream(newFile, false)
+
+        oFile.apply{ writeData() }
+        oFile.close()
+        return outputFileName
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -227,8 +241,8 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
         {
             TODO("Auswahl des Files über Dialog")
         }
-        if (File(externalPath+"/ux47aW_20230528.csv").exists()) {
-            val importResults = readCsv(File(externalPath+"/ux47aW_20230528.csv"))
+        if (File(externalPath+"/results_2023-06-08_14-12-50.csv").exists()) {
+            val importResults = readCsv(File(externalPath+"/results_2023-06-08_14-12-50.csv"))
             viewModel.importResults(importResults)
         }
     }
@@ -247,8 +261,20 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
     }
 
     private fun onSaveClick(){
-        val outputFileName = writeCsv()
-        Toast.makeText(requireContext(),"Saved current list to $outputFileName",Toast.LENGTH_LONG).show()
+        if (viewModel.results.value != null) {
+            val outputFileName = writeCsv()
+            Toast.makeText(
+                requireContext(),
+                "Saved current list to $outputFileName.",
+                Toast.LENGTH_LONG
+            ).show()
+        } else {
+            Toast.makeText(
+                requireContext(),
+                "No results to save.",
+                Toast.LENGTH_LONG
+            ).show()
+        }
     }
 
     private fun onHotspotClick(){
@@ -287,6 +313,9 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
                     .centerCrop()
                     .into(holder.startImage)
                 holder.startTime.text = raceResult.startTime.toString()
+            } else {
+                holder.startImage.setImageResource(0)
+                holder.startTime.text = ""
             }
 
             if (raceResult.finishImage.isNotEmpty()){
@@ -296,10 +325,15 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
                     .centerCrop()
                     .into(holder.finishImage)
                 holder.finishTime.text = raceResult.finishTime.toString()
+            } else {
+                holder.finishImage.setImageResource(0)
+                holder.finishTime.text = ""
             }
 
             if ( raceResult.startImage.isNotEmpty() && raceResult.finishImage.isNotEmpty()){
                 holder.totalTime.text = raceResult.totalTime.toString()
+            } else {
+                holder.totalTime.text = ""
             }
         }
     }
@@ -336,7 +370,11 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
             for (char in sortedList) {
                 numberString += char.value
             }
-            val completeNumber = numberString.toInt()
+            val completeNumber = if (numberString != "") {
+                numberString.toInt()
+            } else {
+                0
+            }
             val start: Boolean = filePath.substringAfterLast("/").startsWith("s",true)
             val time: String = filePath.substringAfterLast("_").substringBeforeLast(".")
             viewModel.registerRaceNumber(completeNumber, filePath, start,time.toLong())
