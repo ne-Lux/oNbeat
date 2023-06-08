@@ -2,14 +2,12 @@ package com.android.samples.oNbeat
 
 import android.content.ContentResolver
 import android.graphics.Color
-import android.graphics.PorterDuff
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AlphaAnimation
-import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
@@ -25,12 +23,15 @@ import com.bumptech.glide.Glide
 import org.tensorflow.lite.task.vision.detector.Detection
 import java.io.File
 import java.io.FileOutputStream
+import java.io.FilenameFilter
 import java.io.OutputStream
 import java.nio.file.Files
-import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 import kotlin.io.path.Path
+import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.name
 
 
 /*
@@ -45,7 +46,7 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
     private var ftpThread: Thread? = null
     private lateinit var ftpClient: FTPClient
 
-
+    private val directoryPath: String = "/storage/emulated/0/DCIM/oNbeat/SampleData/"
     private lateinit var binding: GalleryFragmentBinding
     private lateinit var contentResolver: ContentResolver
     private val buttonClick = AlphaAnimation(0f, 1f)
@@ -93,7 +94,7 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
                     ftpViewModel.userName.value,
                     ftpViewModel.pW.value,
                     imagesToDownload,
-                    "/storage/emulated/0/DCIM/oNbeat/SampleData/",
+                    directoryPath,
                     this
                 )
                 ftpThread = Thread(ftpClient)
@@ -112,7 +113,7 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
                     ftpViewModel.userName.value,
                     ftpViewModel.pW.value,
                     imagesToDownload,
-                    "/storage/emulated/0/DCIM/oNbeat/SampleData/",
+                    directoryPath,
                     this
                 )
                 ftpThread = Thread(ftpClient)
@@ -178,7 +179,6 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
     // ---------------------------------------------------------------------------------------------
     private fun readCsv(inputFile: File): List<RaceResult> {
         //Todo("Pass directorypath to FTPClient. Redundant data atm."
-        val directoryPath: String = "/storage/emulated/0/DCIM/oNbeat/SampleData/"
         val reader = inputFile.bufferedReader()
         val header = reader.readLine()
         return reader.lineSequence()
@@ -218,7 +218,6 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
         writer.flush()
     }
     private fun writeCsv(): String {
-        val directoryPath: String = "/storage/emulated/0/DCIM/oNbeat/SampleData/"
         val dateTimeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss")
         val currentDT = LocalDateTime.now().format(dateTimeFormat)
         val outputFileName: String = "results_$currentDT.csv"
@@ -248,12 +247,16 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
     }
 
     private fun onOpenClick() {
-        val externalPath: String = "/storage/emulated/0/DCIM/oNbeat/SampleData"
-        {
-            TODO("Auswahl des Files über Dialog")
+
+        val files = Path(directoryPath).listDirectoryEntries("*.csv")
+        val fileNames: MutableList<String> = mutableListOf()
+        for (file in files) {
+            fileNames.add(file.name)
         }
-        if (File(externalPath+"/results_2023-06-08_14-12-50.csv").exists()) {
-            val importResults = readCsv(File(externalPath+"/results_2023-06-08_14-12-50.csv"))
+
+
+        if (File(directoryPath+"/results_2023-06-08_14-12-50.csv").exists()) {
+            val importResults = readCsv(File(directoryPath+"/results_2023-06-08_14-12-50.csv"))
             viewModel.importResults(importResults)
         }
     }
