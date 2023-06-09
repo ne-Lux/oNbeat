@@ -28,7 +28,7 @@ import java.io.OutputStream
 import java.nio.file.Files
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.Locale
+import kotlin.collections.ArrayList
 import kotlin.io.path.Path
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.name
@@ -249,10 +249,16 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
     private fun onOpenClick() {
 
         val files = Path(directoryPath).listDirectoryEntries("*.csv")
-        val fileNames: MutableList<String> = mutableListOf()
+        val fileNames: ArrayList<String> = ArrayList()
         for (file in files) {
             fileNames.add(file.name)
         }
+
+        val resultPickerFragment = ResultPickerFragment()
+        val args = Bundle()
+        args.putStringArrayList("fileList", fileNames)
+        resultPickerFragment.arguments = args
+        resultPickerFragment.show(parentFragmentManager, "pickResult_tag")
 
 
         if (File(directoryPath+"/results_2023-06-08_14-12-50.csv").exists()) {
