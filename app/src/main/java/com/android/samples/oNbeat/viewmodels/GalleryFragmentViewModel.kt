@@ -62,7 +62,6 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
     // ---------------------------------------------------------------------------------------------
     // Add a result. Either register a new race number or add it to an existing record.
     // ---------------------------------------------------------------------------------------------
-    
     fun registerRaceNumber (raceNumber: Int, imagePath: String, start: Boolean, time: Long){
         val uri = Uri.parse("file://$imagePath")
         if (start) {
@@ -122,6 +121,9 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
         val filteredNewRaceNumber = currentList!!.indexOfFirst { it.raceNumber == rightRaceNumber}
         val filteredRaceNumber = currentList.indexOfFirst { it.raceNumber == wrongRaceNumber}
         if (filteredRaceNumber != -1){
+
+            /// Logic behind the function:
+            ///
             /// If start has to be corrected
             ///     If there is just the start value and the new start number is not registered yet
             ///     Else if there is also a finish value and the new start number is not registered yet
@@ -138,11 +140,13 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
 
                 // If there is just the start time and there is no record for the correct race number yet
                 if((currentList[filteredRaceNumber].finishTime == 0L) && (filteredNewRaceNumber == -1)) {
+
                     // Just change the start number
                     currentList[filteredRaceNumber].raceNumber = rightRaceNumber
 
                 // If there are two times but there is no record for the correct race number yet
                 } else if ((currentList[filteredRaceNumber].finishTime != 0L) && (filteredNewRaceNumber == -1)) {
+
                     // Register the new race number
                     val result = RaceResult(raceNumber = rightRaceNumber, startTime = wrongTime, startImage = wrongImage, contentUriStart = wrongContentUri)
                     currentList.add(result)
@@ -176,6 +180,7 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
                             contentUriFinish = wrongContentUri
                             totalTime = wrongTime - startTime
                         }
+
                         // Drop the old record, if it has no additional values
                         if (currentList[filteredRaceNumber].finishTime == 0L) {
                             currentList.removeAt(filteredRaceNumber)
@@ -204,6 +209,7 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
                         }
                         currentList.removeAt(filteredRaceNumber)
                     }
+
                 // TRACK MODE only: Base case: there is already a record for the correct race number
                 } else {
                     if (currentList[filteredNewRaceNumber].startTime > wrongTime) {
@@ -225,6 +231,7 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
                         currentList.removeAt(filteredRaceNumber)
                     }
                 }
+
             // FINISH
             } else {
                 wrongTime = _results.value!![filteredRaceNumber].finishTime
@@ -233,11 +240,13 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
 
                 // If there is just the start time and there is no record for the correct race number yet
                 if((currentList[filteredRaceNumber].startTime == 0L) && (filteredNewRaceNumber == -1)) {
+
                     // Just change the start number
                     currentList[filteredRaceNumber].raceNumber = rightRaceNumber
 
                 // If there are two times but there is no record for the correct race number yet
                 } else if ((currentList[filteredRaceNumber].startTime != 0L) && (filteredNewRaceNumber == -1)) {
+
                     // Register the new race number
                     if (!trackMode.value) {
                         val result = RaceResult(raceNumber = rightRaceNumber, startTime = wrongTime, startImage = wrongImage, contentUriStart = wrongContentUri)
@@ -264,6 +273,7 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
                             contentUriFinish = wrongContentUri
                             totalTime = wrongTime - startTime
                         }
+
                     // Existing record accidentally has finish mapped to start
                     } else {
                         with(currentList[filteredNewRaceNumber]) {
@@ -282,8 +292,10 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
                         contentUriFinish = Uri.parse("")
                         totalTime = 0
                     }
+
                 // TRACK MODE only: Base case: there is already a record for the correct race number
                 } else {
+
                     // If there are two finish times for this race number, take the earlier one.
                     if (currentList[filteredNewRaceNumber].finishTime > wrongTime) {
                         with(currentList[filteredNewRaceNumber]) {
@@ -293,6 +305,7 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
                             totalTime = finishTime - startTime
                         }
                     }
+
                     // If the old race number has a start time, set finish to zero. Else, drop the record.
                     if (currentList[filteredRaceNumber].startTime != 0L) {
                         with(currentList[filteredRaceNumber]) {

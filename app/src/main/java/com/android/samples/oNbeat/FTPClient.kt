@@ -12,7 +12,9 @@ import java.net.SocketException
 import java.nio.file.Files
 import kotlin.io.path.Path
 
-
+// -----------------------------------------------------------------------------------------
+// FTPClient is used to connect to an FTP server and download an image
+// -----------------------------------------------------------------------------------------
 class FTPClient(private val firstESP32: Boolean,
                 private val host: String,
                 private val port: Int,
@@ -28,6 +30,10 @@ class FTPClient(private val firstESP32: Boolean,
     init {
         println("init")
     }
+
+    // -----------------------------------------------------------------------------------------
+    // Workflow including connect, login, download, logout, disconnect
+    // -----------------------------------------------------------------------------------------
     override fun run() {
         println("run")
         connect(host, port)
@@ -60,6 +66,9 @@ class FTPClient(private val firstESP32: Boolean,
         disconnect()
     }
 
+    // -----------------------------------------------------------------------------------------
+    // Single functions to be called from the workflow above
+    // -----------------------------------------------------------------------------------------
     private fun connect(hostAddress: String, port: Int) {
         try {
             val address: InetAddress = InetAddress.getByName(hostAddress)

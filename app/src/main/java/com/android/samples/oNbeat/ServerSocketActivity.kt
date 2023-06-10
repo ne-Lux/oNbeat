@@ -17,7 +17,9 @@ import java.net.Socket
 import java.util.Timer
 import java.util.TimerTask
 
-
+// -----------------------------------------------------------------------------------------
+// ServerSocketActivity is a child activity to MainActivity and handles TCP connections
+// -----------------------------------------------------------------------------------------
 class ServerSocketActivity : AppCompatActivity() {
     private var serverThread: Thread? = null
     private var serverSocket: ServerSocket? = null
@@ -35,6 +37,9 @@ class ServerSocketActivity : AppCompatActivity() {
 
     }
 
+    // -----------------------------------------------------------------------------------------
+    // Start TCP server in background thread
+    // -----------------------------------------------------------------------------------------
     private fun startServerThread () {
         serverThread = Thread(ServerRunnable())
         serverThread!!.start()
@@ -54,6 +59,9 @@ class ServerSocketActivity : AppCompatActivity() {
         }
     }
 
+    // -----------------------------------------------------------------------------------------
+    // Inner Class ServerRunnable establishes one TCP server (for one device to connect)
+    // -----------------------------------------------------------------------------------------
     internal inner class ServerRunnable : Runnable {
 
         override fun run() {
@@ -90,6 +98,9 @@ class ServerSocketActivity : AppCompatActivity() {
         }
     }
 
+    // -----------------------------------------------------------------------------------------
+    // CommunicationThread handles the incoming TCP messages of a client in a background thread
+    // -----------------------------------------------------------------------------------------
     internal inner class CommunicationThread(clientSocket: Socket): Runnable {
         private lateinit var input: BufferedReader
         private var ipAddress: String = clientSocket.inetAddress.hostAddress as String

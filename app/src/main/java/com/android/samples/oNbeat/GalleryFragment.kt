@@ -32,12 +32,11 @@ import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.name
 
 
-/*
-GalleryFragment that displays the main fragment and handles the associated button-clicks
- */
+// -------------------------------------------------------------------------------------------------
+// GalleryFragment is associated with the main view and is interfaces to all other components
+// -------------------------------------------------------------------------------------------------
 class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTPClient.FileListener{
 
-    //Initiate ViewModel, binding, permissions and other variables
     private val viewModel: GalleryFragmentViewModel by activityViewModels()
     private val ftpViewModel: FTPClientViewModel by activityViewModels()
 
@@ -49,13 +48,11 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
     private lateinit var contentResolver: ContentResolver
     private lateinit var odf:  ObjectDetectionFragment
 
-    //Initiate the binding
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = GalleryFragmentBinding.inflate(inflater, container, false)
         return binding.root
     }
 
-    //fun onViewCreated defines onClickListener and restores the Fragment according to the ViewModel-Variables
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -68,7 +65,7 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
         // Attach the galleryAdapter
         // -----------------------------------------------------------------------------------------
         contentResolver = requireContext().contentResolver
-        val galleryAdapter = GalleryAdapter { result, _ ->
+        val galleryAdapter = GalleryAdapter { result ->
             onImageClick(result)
         }
 
@@ -241,8 +238,6 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
     // ---------------------------------------------------------------------------------------------
     // Clickhandler
     // ---------------------------------------------------------------------------------------------
-
-    //ClickHandler for image
     private fun onImageClick(raceResult: RaceResult) {
         val correctRNFragment = CorrectRaceNumberFragment()
         val args = Bundle()
@@ -307,7 +302,7 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
     // ---------------------------------------------------------------------------------------------
     // Binding of a race result to Recyclerview Gallery
     // ---------------------------------------------------------------------------------------------
-    private inner class GalleryAdapter(val onClick: (RaceResult, Int) -> Unit) :
+    private inner class GalleryAdapter(val onClick: (RaceResult) -> Unit) :
         ListAdapter<RaceResult, ResultViewHolder>(RaceResult.DiffCallback) {
 
         //Create a new ViewHolder for RecyclerView
@@ -359,7 +354,6 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
     // ---------------------------------------------------------------------------------------------
     // Listener for Object Detection
     // ---------------------------------------------------------------------------------------------
-
     override fun onError(error: String) {
         activity?.runOnUiThread {
             Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show()

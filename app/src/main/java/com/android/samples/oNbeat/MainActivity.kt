@@ -13,9 +13,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 
 
-/*
-MainActivity class
- */
+// -----------------------------------------------------------------------------------------
+// MainActivity class
+// -----------------------------------------------------------------------------------------
 class MainActivity : AppCompatActivity(){
     private val reqPermissionsOnbeat = arrayOf(
         Manifest.permission.INTERNET,
@@ -37,26 +37,23 @@ class MainActivity : AppCompatActivity(){
         }
         startServer()
     }
-    //----------------------------------------------------------------------------------------------------
-    //Permission handling
 
-    //Simple permission check
+    // -----------------------------------------------------------------------------------------
+    // Permission handling
+    // -----------------------------------------------------------------------------------------
     private fun haveNecessaryPermission():Boolean {
         return ((ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.INTERNET) == PackageManager.PERMISSION_GRANTED)
                 && (ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_NETWORK_STATE) == PackageManager.PERMISSION_GRANTED)
                 && (ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_WIFI_STATE) == PackageManager.PERMISSION_GRANTED)
                 && (ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.CHANGE_WIFI_STATE) == PackageManager.PERMISSION_GRANTED)
                 && (ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED))
-        //The result of externalStorageManager is not checked immediately. It is checked every time an image is about to be changed.
     }
 
-    //Permission Request Launcher
     private val permReqLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
             val permissionReqRes = permissions.entries.all {
                 it.value
             }
-            //Check if the needed permissions are granted
             if (permissionReqRes) {
                 //Check the External Storage Manager Permission
                 if (!Environment.isExternalStorageManager()) {

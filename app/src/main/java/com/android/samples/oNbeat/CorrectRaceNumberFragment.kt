@@ -10,12 +10,14 @@ import com.android.samples.oNbeat.data.RaceResult
 import com.android.samples.oNbeat.databinding.CorrectRaceNumberBinding
 import com.android.samples.oNbeat.viewmodels.GalleryFragmentViewModel
 
+// -------------------------------------------------------------------------------------------------
+// CorrectRaceNumber is a DialogFragment that is used to correct a race number
+// -------------------------------------------------------------------------------------------------
 class CorrectRaceNumberFragment: DialogFragment (R.layout.correct_race_number){
     private val viewModel: GalleryFragmentViewModel by activityViewModels()
     private lateinit var binding: CorrectRaceNumberBinding
     private var raceNumber = 0
 
-    //Initiate the binding
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = CorrectRaceNumberBinding.inflate(inflater, container,false)
         raceNumber = arguments?.getInt("raceNumber")!!
@@ -32,7 +34,9 @@ class CorrectRaceNumberFragment: DialogFragment (R.layout.correct_race_number){
         binding.button.setOnClickListener{ onApplyClick() }
     }
 
-    //ClickHandler for Button
+    // ---------------------------------------------------------------------------------------------
+    // ClickHandler
+    // ---------------------------------------------------------------------------------------------
     private fun onApplyClick(){
         if ((binding.startNumberInput.text.toString().trim() != "") && (binding.startNumberInput.text.toString().trim().toInt() != raceNumber)) {
             viewModel.correctRaceNumber(raceNumber,binding.startNumberInput.text.toString().trim().toInt(), start = true)

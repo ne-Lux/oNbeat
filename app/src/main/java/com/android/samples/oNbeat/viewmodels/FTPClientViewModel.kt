@@ -6,7 +6,13 @@ import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
+// -----------------------------------------------------------------------------------------
+// ViewModel to share connection-related data between ServerSocketActivity and GalleryFragment
+// -----------------------------------------------------------------------------------------
 class FTPClientViewModel : ViewModel() {
+    // ---------------------------------------------------------------------------------------------
+    // Variables stored inside the ViewModel and the read-only companions that can be accessed by the Fragments
+    // ---------------------------------------------------------------------------------------------
     private var _ftpPort = MutableStateFlow(21)
     val ftpPort: StateFlow<Int> get() = _ftpPort
     private var _hostOne = MutableStateFlow("")
@@ -26,8 +32,9 @@ class FTPClientViewModel : ViewModel() {
     private var _picDownloadTwo = MutableLiveData<MutableList<String>?>(ArrayList())
     val picDownloadTwo: LiveData<MutableList<String>?> get() = _picDownloadTwo
 
-
-
+    // ---------------------------------------------------------------------------------------------
+    // Simple setter functions.
+    // ---------------------------------------------------------------------------------------------
     fun setHotSpot(status:Boolean){
         _hotSpot.value = status
     }
@@ -53,7 +60,7 @@ class FTPClientViewModel : ViewModel() {
         }
         _connectedDevices.postValue(currentList)
     }
-// Set the IP address of the ESP32
+
     fun setIP(ipAddress: String?){
         if (ipAddress != null) {
             if (_hostOne.value == "") {
@@ -63,6 +70,7 @@ class FTPClientViewModel : ViewModel() {
             }
         }
     }
+
     fun addPic2Download (ipAddress: String, picName: String){
         val currentList = _picDownloadOne.value
         currentList?.add(picName)

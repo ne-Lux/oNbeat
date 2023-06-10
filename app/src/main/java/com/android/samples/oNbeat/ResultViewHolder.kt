@@ -6,10 +6,10 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.android.samples.oNbeat.data.RaceResult
 
-/*
-ImageViewHolder class
- */
-class ResultViewHolder(view: View, onClick: (RaceResult, Int) -> Unit) :
+// -----------------------------------------------------------------------------------------
+// ViewHolder for a race result
+// -----------------------------------------------------------------------------------------
+class ResultViewHolder(view: View, onClick: (RaceResult) -> Unit) :
     RecyclerView.ViewHolder(view) {
     val rootView = view
     val raceNumber: TextView = view.findViewById(R.id.label_race_number)
@@ -20,18 +20,13 @@ class ResultViewHolder(view: View, onClick: (RaceResult, Int) -> Unit) :
     val finishImage: ImageView = view.findViewById(R.id.image_finish)
 
     init {
-        //Set OnClickListener
         startImage.setOnClickListener {
             val image = rootView.tag as? RaceResult ?: return@setOnClickListener
-            val posi = adapterPosition
-            //Return the image and the adapter position
-            onClick(image, posi)
+            onClick(image)
         }
         finishImage.setOnClickListener {
             val image = rootView.tag as? RaceResult ?: return@setOnClickListener
-            val posi = adapterPosition
-            //Return the image and the adapter position
-            onClick(image, posi)
+            onClick(image)
         }
     }
 }

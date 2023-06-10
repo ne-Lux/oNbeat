@@ -29,6 +29,9 @@ import org.tensorflow.lite.task.vision.detector.ObjectDetector
 import android.graphics.BitmapFactory
 import androidx.fragment.app.Fragment
 
+// -----------------------------------------------------------------------------------------
+// ObjectDetectionFragment performs the object detection on a given image
+// -----------------------------------------------------------------------------------------
 class ObjectDetectionFragment(
     private var threshold: Float = 0.5f,
     private var numThreads: Int = 4,
@@ -39,35 +42,25 @@ class ObjectDetectionFragment(
 ) : Fragment() {
 
 
+    // -----------------------------------------------------------------------------------------
+    // Public function to be called from GalleryFragment
+    // -----------------------------------------------------------------------------------------
     fun detectObjects(imagePath: String) {
-        // Use for image files on the phone
-        //val imageFile = File(imagePath)
         val imageBitmap = BitmapFactory.decodeFile(imagePath)
-
-
-        // Use for testing purpose with app resources
-        // val imageBitmap = BitmapFactory.decodeResource(context.resources,  R.drawable.sample_image_finish)
-        // Pass Bitmap to the object detector helper for processing and detection
         detect(imageBitmap, filePath = imagePath)
     }
 
-    //###################################################################################################################
-
-    // For this example this needs to be a var so it can be reset on changes. If the ObjectDetector
-    // will not change, a lazy val would be preferable.
     private var objectDetector: ObjectDetector? = null
 
+    // -----------------------------------------------------------------------------------------
+    // Initiate the object detector including hardware options and model binding
+    // -----------------------------------------------------------------------------------------
     private fun setupObjectDetector() {
-        // Create the base options for the detector using specifies max results and score threshold
         val optionsBuilder =
             ObjectDetector.ObjectDetectorOptions.builder()
                 .setScoreThreshold(threshold)
                 .setMaxResults(maxResults)
-
-        // Set general detection options, including number of used threads
         val baseOptionsBuilder = BaseOptions.builder().setNumThreads(numThreads)
-
-        // Use the specified hardware for running the model. Default to CPU
         when (currentDelegate) {
             DELEGATE_CPU -> {
                 // Default
@@ -85,7 +78,7 @@ class ObjectDetectionFragment(
         }
 
         optionsBuilder.setBaseOptions(baseOptionsBuilder.build())
-        //Bind only one model -> Do not offer options to switch models
+
         val modelName = "v18_lite4_dyn.tflite"
 
         try {
@@ -99,18 +92,19 @@ class ObjectDetectionFragment(
         }
     }
 
+    // -----------------------------------------------------------------------------------------
+    // Perform object detection
+    // -----------------------------------------------------------------------------------------
     private fun detect(image: Bitmap, imageRotation: Int = 0, filePath: String) {
         if (objectDetector == null) {
             setupObjectDetector()
         }
 
-        // Create preprocessor for the image.
         val imageProcessor =
             ImageProcessor.Builder()
                 .add(Rot90Op(-imageRotation / 90))
                 .build()
 
-        // Preprocess the image and convert it into a TensorImage for detection.
         val tensorImage = imageProcessor.process(TensorImage.fromBitmap(image))
 
         val results = objectDetector?.detect(tensorImage)
@@ -121,6 +115,9 @@ class ObjectDetectionFragment(
             tensorImage.width)
     }
 
+    // -----------------------------------------------------------------------------------------
+    // Interface to pass the results back to GalleryFragment
+    // -----------------------------------------------------------------------------------------
     interface DetectorListener {
         fun onError(error: String)
         fun onResults(

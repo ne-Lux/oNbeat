@@ -19,9 +19,9 @@ package com.android.samples.oNbeat.data
 import android.net.Uri
 import androidx.recyclerview.widget.DiffUtil
 
-/*
-Data Class that holds an Image of the MediaStore provided by the ContentResolver
- */
+// -----------------------------------------------------------------------------------------
+// Data class for a race result including time and image
+// -----------------------------------------------------------------------------------------
 data class RaceResult(
     var raceNumber: Int,
     var startTime: Long = 0,
@@ -32,7 +32,9 @@ data class RaceResult(
     var contentUriFinish: Uri = Uri.parse(""),
     var totalTime: Long = 0,
 ) {
-    //Calculate Updates for RecyclerView Adapter
+    // -----------------------------------------------------------------------------------------
+    // Calculate Differences for Recyclerview Adapter
+    // -----------------------------------------------------------------------------------------
     companion object {
         val DiffCallback = object : DiffUtil.ItemCallback<RaceResult>() {
             override fun areItemsTheSame(oldItem: RaceResult, newItem: RaceResult) =
