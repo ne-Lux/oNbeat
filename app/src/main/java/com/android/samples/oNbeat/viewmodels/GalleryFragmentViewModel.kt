@@ -17,24 +17,12 @@
 package com.android.samples.oNbeat.viewmodels
 
 import android.app.Application
-import android.content.ContentResolver
-import android.content.ContentUris
-import android.database.ContentObserver
 import android.net.Uri
-import android.os.Handler
-import android.os.Looper
-import android.provider.MediaStore
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.viewModelScope
 import com.android.samples.oNbeat.data.RaceResult
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
-import java.io.File
-import java.nio.file.Path
-import java.util.Date
-import kotlin.io.path.Path
 
 // ---------------------------------------------------------------------------------------------
 // Shared ViewModel for GalleryFragment that is also accessed by DialogFragments
@@ -46,7 +34,6 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
     // ---------------------------------------------------------------------------------------------
     private val _results = MutableLiveData<MutableList<RaceResult>?>()
     val results: LiveData<MutableList<RaceResult>?> get() = _results
-    private var contentObserver: ContentObserver? = null
     private var _startTag = MutableStateFlow(false)
     val startTag: StateFlow<Boolean> get() = _startTag
     private var _trackMode = MutableStateFlow(true)
@@ -77,7 +64,7 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
     // ---------------------------------------------------------------------------------------------
     
     fun registerRaceNumber (raceNumber: Int, imagePath: String, start: Boolean, time: Long){
-        val uri = Uri.parse("file://"+imagePath)
+        val uri = Uri.parse("file://$imagePath")
         if (start) {
             var filteredRaceNumber: Int = -1
             if (_results.value != null){
@@ -124,12 +111,12 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
     }
     
     // ---------------------------------------------------------------------------------------------
-    // Correct a wrong detected result.
+    // Correct a falsely detected result.
     // ---------------------------------------------------------------------------------------------
     fun correctRaceNumber (wrongRaceNumber: Int, rightRaceNumber: Int, start: Boolean){
-        var wrongTime: Long = 0
-        var wrongImage: String = ""
-        var wrongContentUri: Uri = Uri.parse("")
+        val wrongTime: Long
+        val wrongImage: String
+        val wrongContentUri: Uri
         
         val currentList = _results.value
         val filteredNewRaceNumber = currentList!!.indexOfFirst { it.raceNumber == rightRaceNumber}
@@ -204,7 +191,7 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
                             }
                         }
 
-                    // Existing record accidently has finish mapped to start
+                    // Existing record accidentally has finish mapped to start
                     } else {
                         with(currentList[filteredNewRaceNumber]) {
                             finishTime = startTime
@@ -277,7 +264,7 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
                             contentUriFinish = wrongContentUri
                             totalTime = wrongTime - startTime
                         }
-                    // Existing record accidently has finish mapped to start
+                    // Existing record accidentally has finish mapped to start
                     } else {
                         with(currentList[filteredNewRaceNumber]) {
                             finishTime = startTime
@@ -322,29 +309,4 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
         }
         _results.postValue(currentList)
     }
-    
-    // ---------------------------------------------------------------------------------------------
-    // Unregister the ContentObserver when the view is destroyed, e.g. the app is closed.
-    // ---------------------------------------------------------------------------------------------
-    override fun onCleared() {
-        contentObserver?.let {
-            getApplication<Application>().contentResolver.unregisterContentObserver(it)
-        }
-    }
-}
-
-// ---------------------------------------------------------------------------------------------
-// Register a ContentObserver.
-// ---------------------------------------------------------------------------------------------
-private fun ContentResolver.registerObserver(
-    uri: Uri,
-    observer: (selfChange: Boolean) -> Unit
-): ContentObserver {
-    val contentObserver = object : ContentObserver(Handler(Looper.myLooper()!!)) {
-        override fun onChange(selfChange: Boolean) {
-            observer(selfChange)
-        }
-    }
-    registerContentObserver(uri, true, contentObserver)
-    return contentObserver
 }

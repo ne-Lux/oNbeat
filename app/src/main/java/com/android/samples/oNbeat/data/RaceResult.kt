@@ -18,7 +18,6 @@ package com.android.samples.oNbeat.data
 
 import android.net.Uri
 import androidx.recyclerview.widget.DiffUtil
-import java.util.*
 
 /*
 Data Class that holds an Image of the MediaStore provided by the ContentResolver

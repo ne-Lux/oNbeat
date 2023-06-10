@@ -1,15 +1,12 @@
 package com.android.samples.oNbeat.viewmodels
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import java.util.Date
 
-class FTPClientViewModel() : ViewModel() {
+class FTPClientViewModel : ViewModel() {
     private var _ftpPort = MutableStateFlow(21)
     val ftpPort: StateFlow<Int> get() = _ftpPort
     private var _hostOne = MutableStateFlow("")

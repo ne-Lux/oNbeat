@@ -1,10 +1,8 @@
 package com.android.samples.oNbeat
 
-import androidx.fragment.app.Fragment
 import org.apache.commons.net.ftp.FTP
 import org.apache.commons.net.ftp.FTPClient
 import org.apache.commons.net.ftp.FTPReply
-import org.tensorflow.lite.task.vision.detector.Detection
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -41,7 +39,7 @@ class FTPClient(private val firstESP32: Boolean,
             } else {
                 "finish_$file.jpg"
             }
-            val fileName: String = "picture_$file.jpg"
+            val fileName = "picture_$file.jpg"
             val destFilePath = directoryPath + outputFileName
             if (!Files.exists(Path(directoryPath))) Files.createDirectory(Path(directoryPath))
             val newFile = File(destFilePath)

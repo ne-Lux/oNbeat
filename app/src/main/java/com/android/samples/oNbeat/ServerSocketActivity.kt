@@ -12,7 +12,6 @@ import com.android.samples.oNbeat.viewmodels.FTPClientViewModel
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
-import java.net.InetAddress
 import java.net.ServerSocket
 import java.net.Socket
 import java.util.Timer
@@ -92,14 +91,13 @@ class ServerSocketActivity : AppCompatActivity() {
     }
 
     internal inner class CommunicationThread(clientSocket: Socket): Runnable {
-        private var input: BufferedReader
+        private lateinit var input: BufferedReader
         private var ipAddress: String = clientSocket.inetAddress.hostAddress as String
 
         init {
             try {
                 input = BufferedReader(InputStreamReader(clientSocket.getInputStream()))
             } catch (e: IOException) {
-                TODO("Bei exception connection closen?")
                 e.printStackTrace()
             }
         }

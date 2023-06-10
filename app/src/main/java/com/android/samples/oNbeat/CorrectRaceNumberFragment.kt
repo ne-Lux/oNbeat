@@ -1,14 +1,11 @@
 package com.android.samples.oNbeat
 
-import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.os.bundleOf
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.setFragmentResult
 import com.android.samples.oNbeat.data.RaceResult
 import com.android.samples.oNbeat.databinding.CorrectRaceNumberBinding
 import com.android.samples.oNbeat.viewmodels.GalleryFragmentViewModel
@@ -35,7 +32,7 @@ class CorrectRaceNumberFragment: DialogFragment (R.layout.correct_race_number){
         binding.button.setOnClickListener{ onApplyClick() }
     }
 
-    //ClickHandler for imagebutton
+    //ClickHandler for Button
     private fun onApplyClick(){
         if ((binding.startNumberInput.text.toString().trim() != "") && (binding.startNumberInput.text.toString().trim().toInt() != raceNumber)) {
             viewModel.correctRaceNumber(raceNumber,binding.startNumberInput.text.toString().trim().toInt(), start = true)

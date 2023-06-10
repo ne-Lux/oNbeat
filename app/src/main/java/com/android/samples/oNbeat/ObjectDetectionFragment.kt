@@ -28,62 +28,21 @@ import org.tensorflow.lite.task.vision.detector.Detection
 import org.tensorflow.lite.task.vision.detector.ObjectDetector
 import android.graphics.BitmapFactory
 import androidx.fragment.app.Fragment
-import java.io.File
 
 class ObjectDetectionFragment(
-    var threshold: Float = 0.5f,
-    var numThreads: Int = 4,
-    var maxResults: Int = 4,
-    var currentDelegate: Int = 0,
+    private var threshold: Float = 0.5f,
+    private var numThreads: Int = 4,
+    private var maxResults: Int = 4,
+    private var currentDelegate: Int = 0,
     private val context: Context,
     val objectDetectorListener: DetectorListener?
 ) : Fragment() {
 
-    override fun onResume() {
-        super.onResume()
-        //
-        }
-
-
-    /*override fun onCreateView(
-      inflater: LayoutInflater,
-      container: ViewGroup?,
-      savedInstanceState: Bundle?
-    ): View {
-        _fragmentCameraBinding = FragmentCameraBinding.inflate(inflater, container, false)
-
-        return fragmentCameraBinding.root
-    }'*/
-
-    /*
-    @SuppressLint("MissingPermission")
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        objectDetectorHelper = ObjectDetectorHelper(
-            context = requireContext(),
-            objectDetectorListener = this)
-
-        // Initialize our background executor
-        cameraExecutor = Executors.newSingleThreadExecutor()
-
-        // Wait for the views to be properly laid out
-        fragmentCameraBinding.viewFinder.post {
-            // Set up the camera and its use cases
-            detectObjects("res/drawable/dsc_8349.JPG")
-        }
-
-        // Attach listeners to UI control widgets
-        initBottomSheetControls()
-    }
-    '*/
-
-    // Update the values displayed in the bottom sheet. Reset detector.
 
     fun detectObjects(imagePath: String) {
         // Use for image files on the phone
         //val imageFile = File(imagePath)
-        val imageBitmap = BitmapFactory.decodeFile(imagePath) // statt imageFile.absolutePath()
+        val imageBitmap = BitmapFactory.decodeFile(imagePath)
 
 
         // Use for testing purpose with app resources
@@ -92,49 +51,13 @@ class ObjectDetectionFragment(
         detect(imageBitmap, filePath = imagePath)
     }
 
-    // Update UI after objects have been detected. Extracts original image height/width
-    // to scale and place bounding boxes properly through OverlayView
-    // ################################################## Würde in ein Fragment kommen, dass detect von außerhalb called
-    /*
-    override fun onResults(
-      results: MutableList<Detection>?,
-      inferenceTime: Long,
-      imageHeight: Int,
-      imageWidth: Int
-    ) {
-        activity?.runOnUiThread {
-            fragmentCameraBinding.bottomSheetLayout.inferenceTimeVal.text =
-                            String.format("%d ms", inferenceTime)
-
-            // Pass necessary information to OverlayView for drawing on the canvas
-            fragmentCameraBinding.overlay.setResults(
-                results ?: LinkedList<Detection>(),
-                imageHeight,
-                imageWidth
-            )
-
-            // Force a redraw
-            fragmentCameraBinding.overlay.invalidate()
-        }
-    }
-
-    override fun onError(error: String) {
-        activity?.runOnUiThread {
-            Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show()
-        }
-    }
-    '*/
     //###################################################################################################################
 
     // For this example this needs to be a var so it can be reset on changes. If the ObjectDetector
     // will not change, a lazy val would be preferable.
     private var objectDetector: ObjectDetector? = null
 
-    fun clearObjectDetector() {
-        objectDetector = null
-    }
-
-    fun setupObjectDetector() {
+    private fun setupObjectDetector() {
         // Create the base options for the detector using specifies max results and score threshold
         val optionsBuilder =
             ObjectDetector.ObjectDetectorOptions.builder()
@@ -176,7 +99,7 @@ class ObjectDetectionFragment(
         }
     }
 
-    fun detect(image: Bitmap, imageRotation: Int = 0, filePath: String) {
+    private fun detect(image: Bitmap, imageRotation: Int = 0, filePath: String) {
         if (objectDetector == null) {
             setupObjectDetector()
         }

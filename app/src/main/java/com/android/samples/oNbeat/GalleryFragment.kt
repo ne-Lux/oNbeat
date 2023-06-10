@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.AlphaAnimation
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
@@ -23,7 +22,6 @@ import com.bumptech.glide.Glide
 import org.tensorflow.lite.task.vision.detector.Detection
 import java.io.File
 import java.io.FileOutputStream
-import java.io.FilenameFilter
 import java.io.OutputStream
 import java.nio.file.Files
 import java.time.LocalDateTime
@@ -49,7 +47,6 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
     private val directoryPath: String = "/storage/emulated/0/DCIM/oNbeat/SampleData/"
     private lateinit var binding: GalleryFragmentBinding
     private lateinit var contentResolver: ContentResolver
-    private val buttonClick = AlphaAnimation(0f, 1f)
     private lateinit var odf:  ObjectDetectionFragment
 
     //Initiate the binding
@@ -71,8 +68,8 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
         // Attach the galleryAdapter
         // -----------------------------------------------------------------------------------------
         contentResolver = requireContext().contentResolver
-        val galleryAdapter = GalleryAdapter { result, posi ->
-            onImageClick(result, posi)
+        val galleryAdapter = GalleryAdapter { result, _ ->
+            onImageClick(result)
         }
 
         //Bind the GalleryAdapter to the RecyclerView-Grid
@@ -188,7 +185,7 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
     private fun readCsv(inputFile: File): List<RaceResult> {
         //Todo("Pass directorypath to FTPClient. Redundant data atm."
         val reader = inputFile.bufferedReader()
-        val header = reader.readLine()
+        reader.readLine()
         return reader.lineSequence()
             .filter { it.isNotBlank() }
             .map {
@@ -215,7 +212,7 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
                     finishTime.trim().toLong()-startTime.trim().toLong())
             }.toList()
     }
-    fun OutputStream.writeData() {
+    private fun OutputStream.writeData() {
         val writer = bufferedWriter()
         writer.write(""""raceNumber", "startTime", "startImage", "finishTime", "finishImage", "totalTime"""")
         writer.newLine()
@@ -228,7 +225,7 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
     private fun writeCsv(): String {
         val dateTimeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss")
         val currentDT = LocalDateTime.now().format(dateTimeFormat)
-        val outputFileName: String = "results_$currentDT.csv"
+        val outputFileName = "results_$currentDT.csv"
         val destFilePath = directoryPath + outputFileName
 
         if (!Files.exists(Path(directoryPath))) Files.createDirectory(Path(directoryPath))
@@ -246,7 +243,7 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
     // ---------------------------------------------------------------------------------------------
 
     //ClickHandler for image
-    private fun onImageClick(raceResult: RaceResult, posi: Int) {
+    private fun onImageClick(raceResult: RaceResult) {
         val correctRNFragment = CorrectRaceNumberFragment()
         val args = Bundle()
         args.putInt("raceNumber", raceResult.raceNumber)
