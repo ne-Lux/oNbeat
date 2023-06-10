@@ -51,10 +51,15 @@ class GalleryFragmentViewModel(application: Application) : AndroidViewModel(appl
     val startTag: StateFlow<Boolean> get() = _startTag
     private var _trackMode = MutableStateFlow(true)
     val trackMode: StateFlow<Boolean> get() = _trackMode
+    private var _chosenFile = MutableLiveData<String>()
+    val chosenFile: LiveData<String> get() = _chosenFile
 
     // ---------------------------------------------------------------------------------------------
     // Simple setter functions.
     // ---------------------------------------------------------------------------------------------
+    fun chooseFile(chosenFile: String){
+        _chosenFile.value= chosenFile
+    }
     fun setMode(){
         _trackMode.value = !_trackMode.value
     }

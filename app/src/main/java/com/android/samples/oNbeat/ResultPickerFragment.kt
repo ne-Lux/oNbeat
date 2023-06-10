@@ -47,10 +47,8 @@ class ResultPickerFragment: DialogFragment (R.layout.result_picker){
 
     //ClickHandler for imagebutton
     private fun onApplyClick(){
-
+        if(chosenFile!= "") viewModel.chooseFile(chosenFile)
         dismiss()
     }
-    private fun setResult(fileName: String){
 
-    }
 }

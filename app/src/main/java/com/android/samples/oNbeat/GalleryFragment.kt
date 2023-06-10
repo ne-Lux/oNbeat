@@ -154,6 +154,13 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
             }
         }
 
+        val chosenFileObserver = Observer<String> { chosenFile ->
+            if (File("$directoryPath/$chosenFile").exists()) {
+                val importResults = readCsv(File("$directoryPath/$chosenFile"))
+                viewModel.importResults(importResults)
+            }
+        }
+
         // -----------------------------------------------------------------------------------------
         // Observer Registration
         // -----------------------------------------------------------------------------------------
@@ -162,6 +169,7 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
         ftpViewModel.hotspot.observe(viewLifecycleOwner, hotspotObserver)
         ftpViewModel.connectedDevices.observe(viewLifecycleOwner, devicesObserver)
         viewModel.results.observe(viewLifecycleOwner, raceResultObserver)
+        viewModel.chosenFile.observe(viewLifecycleOwner, chosenFileObserver)
 
         // -----------------------------------------------------------------------------------------
         // Onclick Listeners
@@ -193,14 +201,14 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
                     startTime.trim().toLong(),
                     startImage.trim(),
                     if (startImage != ""){
-                        Uri.parse("file://"+directoryPath+startImage.trim())
+                        Uri.parse("file://"+startImage.trim())
                     } else {
                        Uri.parse("")
                     },
                     finishTime.trim().toLong(),
                     finishImage.trim(),
                     if (finishImage != ""){
-                        Uri.parse("file://"+directoryPath+finishImage.trim())
+                        Uri.parse("file://"+finishImage.trim())
                     } else {
                        Uri.parse("")
                     },
@@ -247,7 +255,6 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
     }
 
     private fun onOpenClick() {
-
         val files = Path(directoryPath).listDirectoryEntries("*.csv")
         val fileNames: ArrayList<String> = ArrayList()
         for (file in files) {
@@ -259,12 +266,6 @@ class GalleryFragment: Fragment(), ObjectDetectionFragment.DetectorListener, FTP
         args.putStringArrayList("fileList", fileNames)
         resultPickerFragment.arguments = args
         resultPickerFragment.show(parentFragmentManager, "pickResult_tag")
-
-
-        if (File(directoryPath+"/results_2023-06-08_14-12-50.csv").exists()) {
-            val importResults = readCsv(File(directoryPath+"/results_2023-06-08_14-12-50.csv"))
-            viewModel.importResults(importResults)
-        }
     }
 
     private fun onModeClick(){
