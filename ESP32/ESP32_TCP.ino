@@ -30,7 +30,7 @@ camera_fb_t * fb = NULL;
 
 // Variables for WiFi
 const char* ssid = "NeLux_Hotspot";
-const char* password = "J45m1nM317";
+const char* password = "xxxxxxxxxxx";
 IPAddress host;
 WiFiClient client;
 int port = 29391;
