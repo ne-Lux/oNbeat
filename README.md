@@ -25,12 +25,18 @@ Run Instructions
 --------------
 1. Be sure to have at least one ESP32, looking as follows:
 <img src="ESP32/ESP32_PXL_20230524_151829037.jpg" height="256" alt="ESP32 Image"/>
-3. Disconnect from mobile network and WiFi on your phone
-4. Open oNbeat. The toolbar works as follows:
+
+2. Disconnect from mobile network and WiFi on your phone
+
+3. Open oNbeat. The toolbar works as follows:
 <img src="screenshots/oNbeat_commented.png" height="256" alt="Commented home screen"/>
-6. Start Hotspot
-7. Connect ESP32 (if two ESP32 are used, the ESP32 at the start line) to a power source
-8. Connect the second ESP32 - OR - change from track mode to loop mode by clicking on the respective image
-9. Enjoy the race!
+
+4. Start Hotspot
+
+5. Connect ESP32 (if two ESP32 are used, the ESP32 at the start line) to a power source
+
+6. Connect the second ESP32 - OR - change from track mode to loop mode by clicking on the respective image
+
+7. Enjoy the race!
 <img src="screenshots/Screenshot_20230610-122846.png" height="256" alt="oNbeat in use"/>
 
